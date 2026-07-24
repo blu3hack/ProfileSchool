@@ -372,36 +372,59 @@ onBeforeUnmount(() => ctx?.revert());
                             :class="spanOf(pillar.span)" :max="9" radius="2rem"
                             :glare-color="accentOf(pillar.accent).glare">
                             <article
-                                class="holo-panel holo-edge relative flex h-full flex-col overflow-hidden rounded-[2rem] p-8 transition-shadow duration-500"
+                                class="holo-panel holo-edge group/card relative flex h-full flex-col overflow-hidden rounded-[2rem] transition-shadow duration-500"
                                 :class="accentOf(pillar.accent).glow">
                                 <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl"
                                     :class="accentOf(pillar.accent).orb"></div>
                                 <div class="pattern-lattice-neon pointer-events-none absolute inset-0 opacity-15"></div>
                                 <div class="scanlines pointer-events-none absolute inset-0 opacity-40"></div>
 
-                                <div class="depth-3 relative">
+                                <!-- Foto pendukung pilar — tampil hanya bila admin mengunggahnya.
+                                     Rasio tetap menjaga tinggi seragam antar kartu di semua layar;
+                                     gradasi bawah melebur foto ke panel gelap agar teks tetap terbaca. -->
+                                <div v-if="pillar.image"
+                                    class="relative aspect-16/10 w-full overflow-hidden sm:aspect-video">
+                                    <img :src="pillar.image" :alt="pillar.title" loading="lazy"
+                                        class="h-full w-full object-cover object-center transition duration-700 group-hover/card:scale-105">
+                                    <div
+                                        class="pointer-events-none absolute inset-0 bg-linear-to-t from-void-950 via-void-950/45 to-transparent">
+                                    </div>
+                                    <div class="scanlines pointer-events-none absolute inset-0 opacity-50"></div>
+                                    <!-- Ikon mengambang di sudut foto sebagai penanda pilar. -->
                                     <span
-                                        class="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-linear-to-br text-3xl"
+                                        class="depth-3 absolute bottom-3 left-6 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/10 bg-linear-to-br text-2xl backdrop-blur-sm"
                                         :class="accentOf(pillar.accent).icon">
                                         {{ pillar.icon }}
                                     </span>
                                 </div>
 
-                                <h3 class="depth-1 relative mt-6 font-display text-xl font-bold text-slate-50">
-                                    {{ pillar.title }}
-                                </h3>
+                                <div class="relative flex flex-1 flex-col p-8" :class="{ 'pt-6': pillar.image }">
+                                    <!-- Ikon versi tanpa foto (tetap seperti sebelumnya). -->
+                                    <div v-if="!pillar.image" class="depth-3 relative">
+                                        <span
+                                            class="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-linear-to-br text-3xl"
+                                            :class="accentOf(pillar.accent).icon">
+                                            {{ pillar.icon }}
+                                        </span>
+                                    </div>
 
-                                <p class="relative mt-3 flex-1 text-sm leading-relaxed text-slate-300/80">
-                                    {{ pillar.description }}
-                                </p>
+                                    <h3 class="depth-1 relative font-display text-xl font-bold text-slate-50"
+                                        :class="pillar.image ? 'mt-0' : 'mt-6'">
+                                        {{ pillar.title }}
+                                    </h3>
 
-                                <ul class="depth-1 relative mt-6 flex flex-wrap gap-2">
-                                    <li v-for="point in pillar.points" :key="point"
-                                        class="rounded-full border px-3 py-1.5 text-xs font-bold"
-                                        :class="accentOf(pillar.accent).chip">
-                                        {{ point }}
-                                    </li>
-                                </ul>
+                                    <p class="relative mt-3 flex-1 text-sm leading-relaxed text-slate-300/80">
+                                        {{ pillar.description }}
+                                    </p>
+
+                                    <ul class="depth-1 relative mt-6 flex flex-wrap gap-2">
+                                        <li v-for="point in pillar.points" :key="point"
+                                            class="rounded-full border px-3 py-1.5 text-xs font-bold"
+                                            :class="accentOf(pillar.accent).chip">
+                                            {{ point }}
+                                        </li>
+                                    </ul>
+                                </div>
                             </article>
                         </HoloTilt>
                     </div>
