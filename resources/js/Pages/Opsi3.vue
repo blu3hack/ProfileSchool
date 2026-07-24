@@ -618,17 +618,6 @@ onBeforeUnmount(() => ctx?.revert());
                             <p v-reveal="replay({ delay: 0.2 })" class="mt-5 text-base leading-relaxed text-slate-300/80">
                                 {{ text('activities_description', 'Setiap kegiatan dirancang menyeimbangkan ruhiyah, nalar, dan kebugaran ananda.') }}
                             </p>
-
-                            <ul v-reveal="replay({ delay: 0.3, stagger: 0.1 })" class="mt-8 space-y-3">
-                                <li v-for="activity in props.activities.slice(0, 3)" :key="activity.title"
-                                    class="holo-panel flex items-center gap-3 rounded-2xl px-4 py-3 transition duration-300 hover:translate-x-1 hover:border-aqua-400/40">
-                                    <span aria-hidden="true">{{ activity.icon }}</span>
-                                    <span class="text-sm font-semibold text-slate-100">{{ activity.title }}</span>
-                                    <span class="ml-auto text-[11px] font-medium text-slate-400">
-                                        {{ activity.schedule }}
-                                    </span>
-                                </li>
-                            </ul>
                         </div>
 
                         <!-- Kartu 3D kanan -->

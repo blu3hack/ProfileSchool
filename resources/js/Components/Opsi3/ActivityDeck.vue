@@ -46,17 +46,12 @@ const hasLoop = props.items.length > 2;
         :autoplay="{ delay: 4200, disableOnInteraction: false, pauseOnMouseEnter: true }" class="deck-swiper">
         <SwiperSlide v-for="item in props.items" :key="item.title">
             <article
-                class="deck-surface scan-sweep relative flex h-full flex-col justify-between overflow-hidden rounded-[2rem] p-7 text-slate-50 ring-1 ring-inset"
+                class="deck-surface relative flex h-full flex-col justify-between overflow-hidden rounded-[2rem] p-7 text-slate-50 ring-1 ring-inset"
                 :class="accentOf(item.accent).ring"
                 :style="{ '--deck-accent': accentOf(item.accent).accent }">
-                <div class="pattern-lattice-neon absolute inset-0 opacity-20"></div>
-                <div class="scanlines absolute inset-0 opacity-50"></div>
-                <div class="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/25 blur-3xl">
-                </div>
-
                 <div class="relative">
                     <span
-                        class="holo-panel-lite flex h-14 w-14 items-center justify-center rounded-2xl text-3xl">
+                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-3xl">
                         {{ item.icon }}
                     </span>
 
@@ -64,7 +59,7 @@ const hasLoop = props.items.length > 2;
                     <p class="mt-3 text-sm leading-relaxed text-slate-100/85">{{ item.description }}</p>
                 </div>
 
-                <div class="holo-panel-lite relative mt-6 flex items-center gap-2 rounded-2xl px-4 py-3">
+                <div class="relative mt-6 flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3">
                     <span class="h-2 w-2 rounded-full bg-current" :class="accentOf(item.accent).text"
                         aria-hidden="true"></span>
                     <span class="text-xs font-semibold tracking-wide">{{ item.schedule }}</span>
@@ -80,12 +75,21 @@ const hasLoop = props.items.length > 2;
     max-width: 23rem;
     height: 25rem;
     overflow: visible;
+    /* Biarkan halaman tetap bisa di-scroll vertikal saat jari menggeser kartu
+       ke samping; hanya gerak horizontal yang ditangani carousel. Ini yang
+       membuat swipe terasa "menempel" di jari tanpa menahan scroll. */
+    touch-action: pan-y;
 }
 
 .deck-swiper :deep(.swiper-slide) {
     border-radius: 2rem;
-    box-shadow:
-        0 36px 70px -30px rgba(0, 0, 0, 0.95),
-        0 0 40px -18px rgba(52, 226, 245, 0.7);
+    /* Shadow tunggal & tipis — cukup memisahkan kartu dari latar tanpa memaksa
+       repaint berat setiap frame saat digeser (glow cyan lama dihapus). */
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.85);
+    /* Percepatan perangkat keras: promosikan tiap slide ke layer GPU sendiri
+       sehingga swipe hanya menggeser tekstur (murah), bukan menggambar ulang. */
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 </style>
