@@ -19,6 +19,39 @@ const currentYear = new Date().getFullYear();
 
 const text = (key, fallback = '') => props.content?.[key] || fallback;
 
+/** Peta cadangan bila field admin kosong / tidak bisa disematkan. */
+const FALLBACK_MAP = 'https://www.openstreetmap.org/export/embed.html?bbox=107.5300%2C-6.8800%2C107.5600%2C-6.8600&layer=mapnik';
+
+/**
+ * URL peta yang benar-benar aman disematkan.
+ *
+ * Google memblokir tautan biasa (mis. `google.com/maps/place/...` atau link
+ * "Bagikan") dengan `X-Frame-Options`, sehingga iframe menolak menampilkannya.
+ * Helper ini merapikan apa pun yang ditempel admin:
+ * - Bila menempel seluruh kode `<iframe …>`, ambil isi `src`-nya.
+ * - Hanya izinkan URL embed yang memang boleh di-frame; selain itu pakai
+ *   peta cadangan agar footer tidak pernah menampilkan error.
+ */
+const mapSrc = computed(() => {
+    const raw = (props.content?.map_embed || '').trim();
+
+    if (!raw) {
+        return FALLBACK_MAP;
+    }
+
+    // Admin menempel tag <iframe …src="…">? Ambil src-nya saja.
+    const fromIframe = raw.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+    const url = (fromIframe ? fromIframe[1] : raw).replace(/&amp;/g, '&');
+
+    // Daftar pola URL yang sah untuk disematkan.
+    const embeddable =
+        /^https:\/\/www\.google\.com\/maps\/embed\?/i.test(url) ||       // Google "Sematkan peta"
+        /^https:\/\/maps\.google\.com\/maps\?[^]*\boutput=embed\b/i.test(url) || // Google output=embed
+        /openstreetmap\.org\/export\/embed/i.test(url);                  // OpenStreetMap embed
+
+    return embeddable ? url : FALLBACK_MAP;
+});
+
 /** Logo unggahan admin (URL siap pakai). Kosong → jatuh ke inisial otomatis. */
 const logo = computed(() => props.content?.nav_logo || '');
 const initial = computed(() => (props.schoolName || 'A').trim().charAt(0).toUpperCase());
@@ -132,8 +165,7 @@ const goTo = (hash) => goToSection(hash);
                     </h3>
 
                     <div class="mt-6 overflow-hidden rounded-3xl border border-aqua-400/20 shadow-[0_0_30px_-14px_rgba(52,226,245,0.8)]">
-                        <iframe
-                            :src="text('map_embed', 'https://www.openstreetmap.org/export/embed.html?bbox=107.5300%2C-6.8800%2C107.5600%2C-6.8600&layer=mapnik')"
+                        <iframe :src="mapSrc"
                             title="Peta lokasi sekolah" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
                             class="h-48 w-full border-0 transition duration-500"
                             :class="theme === 'dark' ? 'invert grayscale-[60%] hue-rotate-180' : 'grayscale-[25%]'"></iframe>

@@ -105,6 +105,6 @@ return [
         ['key' => 'quick_whatsapp', 'group' => 'footer', 'type' => 'url', 'label' => 'Tautan WhatsApp', 'default' => 'https://wa.me/622287654321'],
         ['key' => 'quick_phone', 'group' => 'footer', 'type' => 'text', 'label' => 'Nomor Telepon', 'hint' => 'Format tel:, mis. tel:+622287654321', 'default' => 'tel:+622287654321'],
         ['key' => 'quick_email', 'group' => 'footer', 'type' => 'text', 'label' => 'Alamat Email', 'hint' => 'Format mailto:, mis. mailto:info@alazka.sch.id', 'default' => 'mailto:info@alazka.sch.id'],
-        ['key' => 'map_embed', 'group' => 'footer', 'type' => 'url', 'label' => 'URL Peta (embed)', 'hint' => 'Tautan embed OpenStreetMap / Google Maps.', 'default' => 'https://www.openstreetmap.org/export/embed.html?bbox=107.5300%2C-6.8800%2C107.5600%2C-6.8600&layer=mapnik'],
+        ['key' => 'map_embed', 'group' => 'footer', 'type' => 'url', 'label' => 'URL Peta (embed)', 'hint' => 'Di Google Maps: Bagikan → "Sematkan peta" → salin isi src (atau tempel seluruh kode <iframe>). JANGAN tempel link biasa dari address bar / tombol Bagikan → Salin tautan, karena akan ditolak (X-Frame-Options).', 'default' => 'https://www.openstreetmap.org/export/embed.html?bbox=107.5300%2C-6.8800%2C107.5600%2C-6.8600&layer=mapnik'],
     ],
 ];
