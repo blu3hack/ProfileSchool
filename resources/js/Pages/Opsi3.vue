@@ -3,7 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 import NeonNavbar from '../Components/Opsi3/NeonNavbar.vue';
-import HeroScene from '../Components/Opsi3/HeroScene.vue';
 import HoloTilt from '../Components/Opsi3/HoloTilt.vue';
 import NeonCoverflow from '../Components/Opsi3/NeonCoverflow.vue';
 import EventCard from '../Components/Opsi3/EventCard.vue';
@@ -139,24 +138,6 @@ const featuredEventAccent = computed(() => newsAccent(featuredEvent.value?.accen
 const hero = ref(null);
 const heroPhoto = ref(null);
 
-/**
- * Kualitas scene 3D: perangkat sentuh (ponsel/tablet) memakai 'low' —
- * partikel lebih sedikit, tanpa antialias, DPR dibatasi. Dihitung sekali.
- */
-const sceneQuality = typeof window !== 'undefined'
-    && window.matchMedia('(hover: none), (pointer: coarse)').matches
-    ? 'low'
-    : 'high';
-
-/**
- * Scene 3D hanya dirender selama hero berada (dekat) di viewport. Saat
- * digulir menjauh, `<HeroScene>` di-unmount sehingga loop render WebGL benar-
- * benar berhenti — bukan sekadar tak terlihat. Inilah penghemat terbesar:
- * sebelumnya kanvas terus menganimasikan ratusan partikel walau tak terlihat.
- */
-const heroInView = ref(true);
-let heroObserver = null;
-
 /** Indeks foto galeri yang sedang dibuka di popup; null = tertutup. */
 const lightboxIndex = ref(null);
 const openLightbox = (index) => (lightboxIndex.value = index);
@@ -174,29 +155,14 @@ const heroSlides = computed(() => {
     return props.heroImage.src ? [props.heroImage] : [];
 });
 
-const { active: activeSlide, goTo: goToSlide, pause: pauseSlides, resume: resumeSlides } =
-    useSlideshow(() => heroSlides.value.length, { interval: 6500 });
+const { active: activeSlide } = useSlideshow(() => heroSlides.value.length, { interval: 6500 });
 
-/** Profil yang sedang tampil — dipakai kartu melayang & kredit foto. */
+/** Slide yang sedang tampil — dipakai untuk kredit foto. */
 const currentSlide = computed(() => heroSlides.value[activeSlide.value] ?? {});
-
-/** Kartu profil hanya muncul bila slide memang punya teks. */
-const hasSlideProfile = computed(() => Boolean(currentSlide.value.title || currentSlide.value.description));
 
 let ctx = null;
 
 onMounted(() => {
-    // Pantau visibilitas hero untuk menyalakan/mematikan scene 3D.
-    // `rootMargin` memberi ambang longgar agar kanvas tidak dibongkar-pasang
-    // berulang di batas layar (mahal untuk konteks WebGL).
-    if (hero.value && 'IntersectionObserver' in window) {
-        heroObserver = new IntersectionObserver(
-            ([entry]) => (heroInView.value = entry.isIntersecting),
-            { rootMargin: '300px 0px' },
-        );
-        heroObserver.observe(hero.value);
-    }
-
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
@@ -215,9 +181,7 @@ onMounted(() => {
                 transformOrigin: '50% 100% -60px',
             }, '-=0.45')
             .from('[data-hero-text]', { y: 28, opacity: 0, duration: 0.9 }, '-=0.75')
-            .from('[data-hero-cta] > *', { y: 24, opacity: 0, duration: 0.7, stagger: 0.12 }, '-=0.6')
-            .from('[data-hero-stat]', { y: 40, z: -260, opacity: 0, duration: 0.9, stagger: 0.1 }, '-=0.45')
-            .from('[data-hero-profile]', { x: 60, opacity: 0, duration: 0.9 }, '-=0.8');
+            .from('[data-hero-cta] > *', { y: 24, opacity: 0, duration: 0.7, stagger: 0.12 }, '-=0.6');
 
         // Foto latar ikut bergerak lebih lambat + membesar → paralaks berlapis.
         if (heroPhoto.value) {
@@ -235,7 +199,7 @@ onMounted(() => {
         }
 
         // Konten hero memudar & terdorong menjauh saat halaman digulir.
-        gsap.to('[data-hero-content], [data-hero-profile]', {
+        gsap.to('[data-hero-content]', {
             y: -110,
             opacity: 0.1,
             ease: 'none',
@@ -260,10 +224,7 @@ onMounted(() => {
     });
 });
 
-onBeforeUnmount(() => {
-    ctx?.revert();
-    heroObserver?.disconnect();
-});
+onBeforeUnmount(() => ctx?.revert());
 </script>
 
 <template>
@@ -303,18 +264,8 @@ onBeforeUnmount(() => {
                     <div class="scanlines absolute inset-0 opacity-60"></div>
                 </div>
 
-                <!-- Lapis 3 — scene 3D transparan di atas foto. -->
-                <div class="pointer-events-none absolute inset-0 -z-10">
-                    <!-- `key` memaksa scene dibangun ulang saat tema berganti:
-                         warna kisi masuk lewat args GridHelper yang tidak reaktif.
-                         `v-if` mematikan loop render WebGL saat hero tak terlihat. -->
-                    <HeroScene v-if="heroInView" :key="theme" :theme="theme" :quality="sceneQuality" />
-                </div>
-
-                <div class="container-page stage-3d relative pb-24 pt-36 sm:pt-40">
-                    <!-- Layout asimetris: teks 7 kolom, panel melayang 5 kolom. -->
-                    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-                        <div data-hero-content class="lg:col-span-7">
+                <div class="container-page relative pb-24 pt-36 sm:pt-40">
+                    <div data-hero-content class="max-w-3xl">
                             <div data-hero-badge class="flex">
                                 <span
                                     class="holo-panel-lite inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-aqua-200 sm:text-sm">
@@ -374,66 +325,6 @@ onBeforeUnmount(() => {
                                     {{ text('hero_cta_secondary', 'Jelajahi Sekolah') }}
                                 </a>
                             </div>
-
-                            <!-- Statistik singkat -->
-                            <dl class="mt-14 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
-                                <div v-for="stat in props.stats" :key="stat.label" data-hero-stat
-                                    class="holo-panel-lite hud-corner rounded-3xl px-4 py-4 transition duration-300 hover:-translate-y-1 hover:border-aqua-400/50">
-                                    <dt class="font-display text-2xl font-extrabold text-slate-50 sm:text-[1.7rem]">
-                                        {{ stat.value }}
-                                    </dt>
-                                    <dd class="mt-1 text-xs font-semibold text-slate-300">{{ stat.label }}</dd>
-                                    <dd class="text-[10px] font-medium uppercase tracking-wider text-aqua-300">
-                                        {{ stat.hint }}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <!-- Kolom kanan — profil foto yang sedang tampil.
-                             Ikut berganti bersama fotonya, dengan fade yang
-                             sama supaya keduanya terbaca sebagai satu unit. -->
-                        <div v-if="hasSlideProfile" data-hero-profile class="lg:col-span-5"
-                            @mouseenter="pauseSlides" @mouseleave="resumeSlides" @focusin="pauseSlides"
-                            @focusout="resumeSlides">
-                            <div class="holo-panel hud-corner relative overflow-hidden rounded-[2rem] p-7 lg:ml-auto lg:max-w-sm">
-                                <div class="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-aqua-500/25 blur-3xl"></div>
-                                <div class="scanlines pointer-events-none absolute inset-0 opacity-40"></div>
-
-                                <!-- `mode="out-in"` menahan teks lama sampai benar-benar
-                                     pudar, jadi tidak ada dua profil yang bertumpuk. -->
-                                <Transition name="hero-fade" mode="out-in">
-                                    <div :key="activeSlide" class="relative" aria-live="polite">
-                                        <p v-if="currentSlide.eyebrow"
-                                            class="text-[11px] font-bold uppercase tracking-[0.24em] text-aqua-300">
-                                            {{ currentSlide.eyebrow }}
-                                        </p>
-                                        <h2 v-if="currentSlide.title"
-                                            class="mt-3 font-display text-xl font-bold leading-snug text-slate-50 sm:text-2xl">
-                                            {{ currentSlide.title }}
-                                        </h2>
-                                        <p v-if="currentSlide.description"
-                                            class="mt-3 text-sm leading-relaxed text-slate-300/85">
-                                            {{ currentSlide.description }}
-                                        </p>
-                                    </div>
-                                </Transition>
-
-                                <!-- Indikator sekaligus navigasi manual. -->
-                                <div v-if="heroSlides.length > 1" class="relative mt-7 flex items-center gap-2.5">
-                                    <button v-for="(slide, index) in heroSlides" :key="slide.src" type="button"
-                                        class="h-1.5 rounded-full transition-all duration-500 hover:bg-aqua-300"
-                                        :class="index === activeSlide
-                                            ? 'w-8 bg-aqua-400 shadow-[0_0_14px_-2px_rgba(52,226,245,0.9)]'
-                                            : 'w-3 bg-white/25'"
-                                        :aria-label="`Tampilkan foto ${index + 1}: ${slide.title || slide.alt || ''}`"
-                                        :aria-current="index === activeSlide" @click="goToSlide(index)"></button>
-                                    <span class="ml-auto text-[11px] font-semibold tabular-nums text-slate-400">
-                                        {{ String(activeSlide + 1).padStart(2, '0') }} / {{ String(heroSlides.length).padStart(2, '0') }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
