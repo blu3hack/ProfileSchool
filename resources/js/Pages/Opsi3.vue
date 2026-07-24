@@ -139,6 +139,24 @@ const featuredEventAccent = computed(() => newsAccent(featuredEvent.value?.accen
 const hero = ref(null);
 const heroPhoto = ref(null);
 
+/**
+ * Kualitas scene 3D: perangkat sentuh (ponsel/tablet) memakai 'low' —
+ * partikel lebih sedikit, tanpa antialias, DPR dibatasi. Dihitung sekali.
+ */
+const sceneQuality = typeof window !== 'undefined'
+    && window.matchMedia('(hover: none), (pointer: coarse)').matches
+    ? 'low'
+    : 'high';
+
+/**
+ * Scene 3D hanya dirender selama hero berada (dekat) di viewport. Saat
+ * digulir menjauh, `<HeroScene>` di-unmount sehingga loop render WebGL benar-
+ * benar berhenti — bukan sekadar tak terlihat. Inilah penghemat terbesar:
+ * sebelumnya kanvas terus menganimasikan ratusan partikel walau tak terlihat.
+ */
+const heroInView = ref(true);
+let heroObserver = null;
+
 /** Indeks foto galeri yang sedang dibuka di popup; null = tertutup. */
 const lightboxIndex = ref(null);
 const openLightbox = (index) => (lightboxIndex.value = index);
@@ -168,6 +186,17 @@ const hasSlideProfile = computed(() => Boolean(currentSlide.value.title || curre
 let ctx = null;
 
 onMounted(() => {
+    // Pantau visibilitas hero untuk menyalakan/mematikan scene 3D.
+    // `rootMargin` memberi ambang longgar agar kanvas tidak dibongkar-pasang
+    // berulang di batas layar (mahal untuk konteks WebGL).
+    if (hero.value && 'IntersectionObserver' in window) {
+        heroObserver = new IntersectionObserver(
+            ([entry]) => (heroInView.value = entry.isIntersecting),
+            { rootMargin: '300px 0px' },
+        );
+        heroObserver.observe(hero.value);
+    }
+
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
@@ -231,7 +260,10 @@ onMounted(() => {
     });
 });
 
-onBeforeUnmount(() => ctx?.revert());
+onBeforeUnmount(() => {
+    ctx?.revert();
+    heroObserver?.disconnect();
+});
 </script>
 
 <template>
@@ -274,8 +306,9 @@ onBeforeUnmount(() => ctx?.revert());
                 <!-- Lapis 3 — scene 3D transparan di atas foto. -->
                 <div class="pointer-events-none absolute inset-0 -z-10">
                     <!-- `key` memaksa scene dibangun ulang saat tema berganti:
-                         warna kisi masuk lewat args GridHelper yang tidak reaktif. -->
-                    <HeroScene :key="theme" :theme="theme" />
+                         warna kisi masuk lewat args GridHelper yang tidak reaktif.
+                         `v-if` mematikan loop render WebGL saat hero tak terlihat. -->
+                    <HeroScene v-if="heroInView" :key="theme" :theme="theme" :quality="sceneQuality" />
                 </div>
 
                 <div class="container-page stage-3d relative pb-24 pt-36 sm:pt-40">

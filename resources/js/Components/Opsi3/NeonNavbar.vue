@@ -33,7 +33,8 @@ const activeHash = ref(props.active || props.links[0]?.hash || '');
 /** 0 … 1 — mengisi garis progres tipis di dasar navbar. */
 const progress = ref(0);
 
-const onScroll = () => {
+/** Perhitungan sesungguhnya — hanya dijalankan sekali per frame. */
+const measure = () => {
     scrolled.value = window.scrollY > 40;
 
     const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -61,6 +62,26 @@ const onScroll = () => {
             break;
         }
     }
+};
+
+/**
+ * Event scroll bisa terpicu berkali-kali per frame (apalagi dengan Lenis).
+ * `measure()` membaca layout (scrollHeight, getBoundingClientRect) sehingga
+ * memanggilnya tiap event memicu layout-thrash. rAF menjamin maksimal satu
+ * kali per frame — sinkron dengan paint, tanpa membebani scroll.
+ */
+let scrollTick = false;
+
+const onScroll = () => {
+    if (scrollTick) {
+        return;
+    }
+
+    scrollTick = true;
+    requestAnimationFrame(() => {
+        measure();
+        scrollTick = false;
+    });
 };
 
 const closeMenu = () => (menuOpen.value = false);
