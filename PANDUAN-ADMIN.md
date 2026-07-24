@@ -38,6 +38,7 @@ kali percobaan gagal, login dikunci sementara.
 |------|------------------|
 | **Dasbor** | Ringkasan jumlah konten + pintasan |
 | **Konten Halaman** | Semua teks halaman utama: badge & judul hero, paragraf, label tombol, judul tiap section, teks PPDB, teks footer, **foto latar beranda**, tautan WhatsApp/telepon/email, dan URL peta |
+| **Tema Website** | Warna aksen neon situs (Aqua, Ungu, Magenta, Emas) **dan warna latar utama** untuk **mode gelap dan terang** secara terpisah; permukaan kartu & garis diturunkan otomatis dari warna latar, lengkap dengan pratinjau langsung dan tombol kembalikan ke bawaan |
 | **Berita** | Tambah/ubah/hapus artikel, banner, galeri foto, tag, blok isi, sakelar terbit/draf |
 | **Pustaka Media** | Semua gambar yang pernah diunggah; bisa dipakai ulang atau dihapus |
 | **Statistik Beranda** | Angka "1.200+ Siswa Aktif" dsb. |
@@ -69,6 +70,7 @@ prestasi, foto kegiatan, foto beranda). Berkas disimpan di
 | `config/site_content.php` | Definisi + nilai default semua teks halaman. **Menambah teks baru cukup menambah satu baris di sini**, lalu pakai `content.<key>` di komponen Vue |
 | `config/admin_resources.php` | Definisi koleksi konten (field, validasi, kolom tabel). Menambah jenis konten baru tidak perlu controller atau halaman baru |
 | `app/Support/PageContent.php` | Menggabungkan default config dengan nilai database |
+| `app/Support/ThemePalette.php` | Warna aksen tema pilihan admin → CSS yang disuntikkan ke `<head>` (menimpa variabel warna di `app.css`). Ramp shade 200–600 diturunkan otomatis via `color-mix()` |
 | `app/Support/SiteInfo.php` | Identitas, menu, kontak, sosial media |
 | `app/Support/NewsRepository.php` | Sumber tunggal data berita untuk halaman publik |
 | `app/Http/Controllers/Admin/` | Controller panel admin |

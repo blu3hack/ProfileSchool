@@ -19,6 +19,7 @@ const sidebarOpen = ref(false);
 const mainMenu = [
     { label: 'Dasbor', icon: '🏠', href: '/admin' },
     { label: 'Konten Halaman', icon: '✏️', href: '/admin/konten' },
+    { label: 'Tema Website', icon: '🎨', href: '/admin/tema' },
     { label: 'Berita', icon: '📰', href: '/admin/berita' },
     { label: 'Next Event', icon: '📅', href: '/admin/event' },
     { label: 'Pustaka Media', icon: '🖼️', href: '/admin/media' },

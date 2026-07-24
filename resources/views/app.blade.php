@@ -8,6 +8,10 @@
 
         @vite(['resources/js/app.js'])
         @inertiaHead
+
+        {{-- Warna aksen tema pilihan admin (menu "Tema Website").
+             Ditaruh setelah @vite agar menimpa nilai bawaan di app.css. --}}
+        <style id="admin-theme">{!! \App\Support\ThemePalette::css() !!}</style>
     </head>
     <body class="font-sans antialiased">
         @inertia

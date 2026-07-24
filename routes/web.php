@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
@@ -66,6 +67,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Teks & gambar tunggal tiap section landing page.
     Route::get('/konten', [SettingController::class, 'edit'])->name('content.edit');
     Route::put('/konten', [SettingController::class, 'update'])->name('content.update');
+
+    // Warna tema (aksen neon) untuk mode gelap & terang.
+    Route::get('/tema', [ThemeController::class, 'edit'])->name('theme.edit');
+    Route::put('/tema', [ThemeController::class, 'update'])->name('theme.update');
 
     // Berita.
     Route::get('/berita', [AdminNewsController::class, 'index'])->name('news.index');
