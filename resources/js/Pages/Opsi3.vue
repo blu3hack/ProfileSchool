@@ -319,7 +319,7 @@ onBeforeUnmount(() => ctx?.revert());
 
                             <div data-hero-cta class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <a href="#ppdb"
-                                    class="group relative overflow-hidden rounded-full bg-linear-to-r from-aqua-400 via-aqua-500 to-volt-400 px-8 py-4 text-center text-sm font-bold text-void-950 shadow-[0_0_34px_-6px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(169,123,255,0.95)]"
+                                    class="group relative overflow-hidden rounded-full bg-aqua-500 bg-linear-to-r from-aqua-400 via-aqua-500 to-volt-400 px-8 py-4 text-center text-sm font-bold text-void-950 shadow-[0_0_34px_-6px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(169,123,255,0.95)]"
                                     @click.prevent="scrollTo('#ppdb')">
                                     <span class="relative z-10">{{ text('hero_cta_primary', 'Daftar Sekarang') }}</span>
                                     <span
@@ -790,7 +790,7 @@ onBeforeUnmount(() => ctx?.revert());
 
                             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                                 <a :href="text('ppdb_primary_href', 'https://wa.me/622287654321')"
-                                    class="w-full rounded-full bg-linear-to-r from-aqua-400 to-volt-400 px-8 py-4 text-sm font-bold text-void-950 shadow-[0_0_34px_-6px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(169,123,255,0.95)] sm:w-auto">
+                                    class="w-full rounded-full bg-aqua-500 bg-linear-to-r from-aqua-400 to-volt-400 px-8 py-4 text-sm font-bold text-void-950 shadow-[0_0_34px_-6px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(169,123,255,0.95)] sm:w-auto">
                                     {{ text('ppdb_primary_label', 'Daftar via WhatsApp') }}
                                 </a>
                                 <a href="#kontak"

@@ -175,7 +175,7 @@ const goToCta = (event) => {
                     <a v-if="ctaLabel" :href="ctaHref"
                         :target="ctaIsSection ? null : '_blank'"
                         :rel="ctaIsSection ? null : 'noopener'"
-                        class="group relative hidden overflow-hidden rounded-full bg-linear-to-r from-aqua-400 to-volt-400 px-5 py-2.5 text-sm font-bold text-void-950 shadow-[0_0_24px_rgba(52,226,245,0.45)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_36px_rgba(169,123,255,0.6)] sm:inline-block"
+                        class="group relative hidden overflow-hidden rounded-full bg-aqua-500 bg-linear-to-r from-aqua-400 to-volt-400 px-5 py-2.5 text-sm font-bold text-void-950 shadow-[0_0_24px_rgba(52,226,245,0.45)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_36px_rgba(169,123,255,0.6)] sm:inline-block"
                         @click="goToCta">
                         <span class="relative z-10">{{ ctaLabel }}</span>
                         <span
@@ -221,7 +221,7 @@ const goToCta = (event) => {
                             <a :href="ctaHref"
                                 :target="ctaIsSection ? null : '_blank'"
                                 :rel="ctaIsSection ? null : 'noopener'"
-                                class="mt-1 block rounded-2xl bg-linear-to-r from-aqua-400 to-volt-400 px-4 py-3 text-center text-sm font-bold text-void-950"
+                                class="mt-1 block rounded-2xl bg-aqua-500 bg-linear-to-r from-aqua-400 to-volt-400 px-4 py-3 text-center text-sm font-bold text-void-950"
                                 @click="goToCta">
                                 {{ ctaLabel }}
                             </a>
