@@ -24,11 +24,14 @@ class PageContent
 
         foreach (config('site_content.fields', []) as $field) {
             $key = $field['key'];
-            $value = $values[$key] ?? null;
 
-            $content[$key] = ($value === null || $value === '')
-                ? ($field['default'] ?? null)
-                : $value;
+            // Bedakan "belum pernah diisi" (pakai default) dari "sengaja
+            // dikosongkan admin" (hormati nilai kosong). Baris yang sudah ada
+            // di database — termasuk string kosong — menang atas default,
+            // supaya sebuah field benar-benar bisa dikosongkan/disembunyikan.
+            $content[$key] = array_key_exists($key, $values)
+                ? $values[$key]
+                : ($field['default'] ?? null);
         }
 
         // Field gambar dikirim sebagai URL siap pakai di <img src>.

@@ -118,6 +118,13 @@ const accentOf = (name) => pillarAccents[name] ?? pillarAccents.mint;
  */
 const text = (key, fallback = '') => props.content?.[key] || fallback;
 
+/**
+ * Pembaca nilai apa adanya — menghormati string kosong (tidak jatuh ke
+ * teks cadangan). Dipakai untuk elemen yang boleh dihapus admin, mis.
+ * baris ketiga judul hero.
+ */
+const raw = (key) => (props.content?.[key] ?? '').trim();
+
 /** Kartu besar mengisi 3 dari 5 kolom — sumber ritme layout asimetris. */
 const spanOf = (span) => (span === 'lg' ? 'md:col-span-3' : 'md:col-span-2');
 
@@ -301,11 +308,14 @@ onBeforeUnmount(() => ctx?.revert());
                                         {{ text('hero_title_2', 'Berpikir Masa Depan') }}
                                     </span>
                                 </span>
-                                <span class="block overflow-hidden py-1">
+                                <!-- Baris ketiga boleh dikosongkan admin: bila teks & kata sorot
+                                     sama-sama kosong, seluruh baris tidak dirender. -->
+                                <span v-if="raw('hero_title_3') || raw('hero_title_highlight')"
+                                    class="block overflow-hidden py-1">
                                     <span data-hero-line class="block text-slate-50">
-                                        {{ text('hero_title_3', 'Berhati') }}
-                                        <span class="relative inline-block">
-                                            <span class="relative z-10">{{ text('hero_title_highlight', 'Tenang') }}</span>
+                                        {{ raw('hero_title_3') }}
+                                        <span v-if="raw('hero_title_highlight')" class="relative inline-block">
+                                            <span class="relative z-10">{{ raw('hero_title_highlight') }}</span>
                                             <span
                                                 class="absolute inset-x-0 bottom-1 z-0 h-3 rounded-full bg-plasma-400/70 blur-[3px]"></span>
                                         </span>
