@@ -10,6 +10,8 @@ import EventCard from '../Components/Opsi3/EventCard.vue';
 import EventCountdown from '../Components/Opsi3/EventCountdown.vue';
 import ActivityDeck from '../Components/Opsi3/ActivityDeck.vue';
 import NeonTimeline from '../Components/Opsi3/NeonTimeline.vue';
+import GalleryCarousel from '../Components/Opsi3/GalleryCarousel.vue';
+import GalleryLightbox from '../Components/Opsi3/GalleryLightbox.vue';
 import NeonFooter from '../Components/Opsi3/NeonFooter.vue';
 import { getSmoothScroll, gsap, ScrollTrigger } from '../lib/smooth-scroll';
 import { newsAccent } from '../lib/news-accent';
@@ -31,6 +33,8 @@ const props = defineProps({
     events: { type: Array, default: () => [] },
     activities: { type: Array, default: () => [] },
     achievements: { type: Array, default: () => [] },
+    /** Foto galeri profil sekolah untuk carousel di bawah section Prestasi. */
+    gallery: { type: Array, default: () => [] },
     contacts: { type: Array, default: () => [] },
     socials: { type: Array, default: () => [] },
 });
@@ -127,6 +131,10 @@ const featuredEventAccent = computed(() => newsAccent(featuredEvent.value?.accen
 
 const hero = ref(null);
 const heroPhoto = ref(null);
+
+/** Indeks foto galeri yang sedang dibuka di popup; null = tertutup. */
+const lightboxIndex = ref(null);
+const openLightbox = (index) => (lightboxIndex.value = index);
 
 /**
  * Slide hero. Server sudah mengurus cadangan (foto tunggal lama dipakai bila
@@ -710,6 +718,44 @@ onBeforeUnmount(() => ctx?.revert());
                 </div>
             </section>
 
+            <!-- =========================== GALERI =========================== -->
+            <section v-if="props.gallery.length" id="galeri" class="relative scroll-mt-28 overflow-hidden py-24 sm:py-32">
+                <div v-parallax="{ y: 90, speed: -0.9 }"
+                    class="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-plasma-500/15 blur-3xl">
+                </div>
+
+                <div class="container-page relative">
+                    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                        <div class="max-w-xl">
+                            <p v-reveal="replay({ from: 'fade' })"
+                                class="text-xs font-bold uppercase tracking-[0.24em] text-aqua-300">
+                                {{ text('gallery_eyebrow', 'Galeri Sekolah') }}
+                            </p>
+                            <h2 v-reveal="replay({ delay: 0.1 })"
+                                class="mt-4 font-display text-3xl font-extrabold leading-tight text-slate-50 sm:text-5xl">
+                                {{ text('gallery_title', 'Potret Keseharian') }}
+                                <span class="text-gradient-neon">
+                                    {{ text('gallery_title_highlight', 'Profil Sekolah') }}
+                                </span>
+                            </h2>
+                            <p v-reveal="replay({ delay: 0.2 })" class="mt-4 text-base leading-relaxed text-slate-300/80">
+                                {{ text('gallery_description', 'Sekilas suasana gedung, kegiatan, dan momen berharga di lingkungan sekolah. Klik foto untuk melihatnya lebih besar.') }}
+                            </p>
+                        </div>
+
+                        <Link v-reveal="replay({ from: 'left', delay: 0.2 })" href="/galeri"
+                            class="holo-panel inline-flex shrink-0 items-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-slate-100 transition duration-300 hover:-translate-y-0.5 hover:text-aqua-200">
+                            {{ text('gallery_cta', 'Lihat Semua') }}
+                            <span aria-hidden="true">&rarr;</span>
+                        </Link>
+                    </div>
+
+                    <div v-reveal="replay({ from: 'fade', delay: 0.25 })" class="mt-14">
+                        <GalleryCarousel :images="props.gallery" @open="openLightbox" />
+                    </div>
+                </div>
+            </section>
+
             <!-- ============================ PPDB ============================ -->
             <section id="ppdb" class="relative scroll-mt-28 pb-28">
                 <div class="container-page">
@@ -761,6 +807,9 @@ onBeforeUnmount(() => ctx?.revert());
 
         <NeonFooter :school-name="props.schoolName" :links="navLinks" :contacts="props.contacts"
             :socials="props.socials" :content="props.content" />
+
+        <!-- Popup foto galeri — dibagikan seluruh section yang menampilkan galeri. -->
+        <GalleryLightbox v-model:index="lightboxIndex" :images="props.gallery" />
     </div>
 </template>
 

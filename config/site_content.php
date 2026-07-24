@@ -23,6 +23,7 @@ return [
         'event' => 'Section Next Event',
         'kegiatan' => 'Section Kegiatan',
         'prestasi' => 'Section Prestasi',
+        'galeri' => 'Section Galeri',
         'ppdb' => 'Section PPDB / Ajakan Daftar',
         'footer' => 'Footer & Kontak Cepat',
     ],
@@ -33,6 +34,8 @@ return [
         ['key' => 'school_name', 'group' => 'identitas', 'type' => 'text', 'label' => 'Nama Sekolah', 'default' => 'Alazka Islamic School'],
         ['key' => 'school_subtitle', 'group' => 'identitas', 'type' => 'text', 'label' => 'Sub-judul Logo', 'hint' => 'Tampil kecil di bawah nama sekolah pada navbar & footer.', 'default' => 'SD & SMP Islam Terpadu'],
         ['key' => 'nav_logo', 'group' => 'identitas', 'type' => 'image', 'label' => 'Logo Sekolah', 'hint' => 'Tampil di navbar & footer. Kosongkan untuk memakai inisial otomatis. Disarankan PNG transparan rasio persegi, minimal 128px.', 'default' => null],
+        ['key' => 'nav_cta_label', 'group' => 'identitas', 'type' => 'text', 'label' => 'Teks Tombol "Daftar" (Navbar)', 'hint' => 'Tombol menonjol di ujung kanan navbar. Kosongkan untuk menyembunyikannya.', 'default' => 'Daftar PPDB'],
+        ['key' => 'nav_cta_href', 'group' => 'identitas', 'type' => 'text', 'label' => 'Target Tombol "Daftar"', 'hint' => 'Isi #ppdb untuk menggulir ke bagian PPDB, atau tempel URL formulir pendaftaran (mis. https://...) yang akan dibuka di tab baru.', 'default' => '#ppdb'],
         ['key' => 'meta_description', 'group' => 'identitas', 'type' => 'textarea', 'label' => 'Deskripsi Meta (SEO)', 'default' => 'Sekolah Islam terpadu jenjang SD & SMP dengan tahfidz terstruktur, sains modern, dan pembinaan akhlak.'],
 
         // ------------------------------- Hero
@@ -79,6 +82,13 @@ return [
         ['key' => 'achievements_title', 'group' => 'prestasi', 'type' => 'text', 'label' => 'Judul Section', 'default' => 'Jejak Prestasi'],
         ['key' => 'achievements_title_highlight', 'group' => 'prestasi', 'type' => 'text', 'label' => 'Judul (gradasi neon)', 'default' => 'Siswa SD & SMP'],
         ['key' => 'achievements_description', 'group' => 'prestasi', 'type' => 'textarea', 'label' => 'Deskripsi Section', 'default' => "Buah dari proses belajar yang konsisten — akademik, olahraga, seni, hingga tahfidz Al-Qur'an."],
+
+        // ------------------------------- Galeri
+        ['key' => 'gallery_eyebrow', 'group' => 'galeri', 'type' => 'text', 'label' => 'Label Kecil', 'default' => 'Galeri Sekolah'],
+        ['key' => 'gallery_title', 'group' => 'galeri', 'type' => 'text', 'label' => 'Judul Section', 'default' => 'Potret Keseharian'],
+        ['key' => 'gallery_title_highlight', 'group' => 'galeri', 'type' => 'text', 'label' => 'Judul (gradasi neon)', 'default' => 'Profil Sekolah'],
+        ['key' => 'gallery_description', 'group' => 'galeri', 'type' => 'textarea', 'label' => 'Deskripsi Section', 'default' => 'Sekilas suasana gedung, kegiatan, dan momen berharga di lingkungan sekolah. Klik foto untuk melihatnya lebih besar.'],
+        ['key' => 'gallery_cta', 'group' => 'galeri', 'type' => 'text', 'label' => 'Teks Tombol "Lihat Semua"', 'default' => 'Lihat Semua'],
 
         // ------------------------------- PPDB
         ['key' => 'ppdb_badge', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Badge', 'default' => 'PPDB Tahun Ajaran 2026/2027'],

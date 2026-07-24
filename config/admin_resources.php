@@ -3,6 +3,7 @@
 use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\ContactInfo;
+use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\NavLink;
 use App\Models\Pillar;
@@ -119,6 +120,22 @@ return [
             ['name' => 'student', 'label' => 'Nama Siswa / Tim', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:120']],
             ['name' => 'grade', 'label' => 'Kelas / Jenjang', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:60'], 'hint' => 'Contoh: SMP Kelas 8'],
             ['name' => 'image', 'label' => 'Foto Pendukung', 'type' => 'image', 'rules' => ['nullable', 'string', 'max:2048'], 'hint' => 'Foto penyerahan piala / sertifikat.'],
+        ],
+    ],
+
+    'gallery' => [
+        'label' => 'Galeri',
+        'singular' => 'Foto Galeri',
+        'icon' => '📸',
+        'description' => 'Kumpulan foto profil sekolah pada carousel galeri di beranda dan halaman "Galeri" lengkap.',
+        'model' => GalleryImage::class,
+        'columns' => ['title', 'caption'],
+        'fields' => [
+            ['name' => 'image', 'label' => 'Foto', 'type' => 'image', 'rules' => ['required', 'string', 'max:2048'], 'hint' => 'Disarankan minimal 1200px pada sisi terpanjang.'],
+            ['name' => 'title', 'label' => 'Judul Foto', 'type' => 'text', 'rules' => ['required', 'string', 'max:150'], 'hint' => 'Tampil sebagai judul di popup.'],
+            ['name' => 'caption', 'label' => 'Keterangan', 'type' => 'textarea', 'rules' => ['nullable', 'string', 'max:500'], 'hint' => 'Deskripsi foto yang muncul di popup.'],
+            ['name' => 'alt', 'label' => 'Teks Alternatif', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:200'], 'hint' => 'Kosongkan untuk memakai judul.'],
+            ['name' => 'credit', 'label' => 'Kredit Foto', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:120'], 'hint' => 'Kosongkan bila memakai foto sendiri.'],
         ],
     ],
 

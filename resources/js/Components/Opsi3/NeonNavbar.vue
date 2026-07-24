@@ -19,6 +19,11 @@ const props = defineProps({
 /** Logo unggahan admin (URL siap pakai). Kosong → jatuh ke inisial otomatis. */
 const logo = computed(() => props.content?.nav_logo || '');
 const subtitle = computed(() => props.content?.school_subtitle || 'SD & SMP Islam Terpadu');
+/** Tombol CTA "Daftar" — teks & target bisa diedit admin di Konten Halaman. */
+const ctaLabel = computed(() => (props.content?.nav_cta_label ?? 'Daftar PPDB').trim());
+const ctaHref = computed(() => (props.content?.nav_cta_href || '#ppdb').trim());
+/** Target berupa #section digulir mulus; selain itu diperlakukan tautan biasa. */
+const ctaIsSection = computed(() => ctaHref.value.startsWith('#'));
 /** Inisial nama sekolah untuk placeholder saat logo belum diunggah. */
 const initial = computed(() => (props.schoolName || 'A').trim().charAt(0).toUpperCase());
 
@@ -72,6 +77,16 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
 const goTo = (hash) => {
     menuOpen.value = false;
     goToSection(hash);
+};
+
+/** Klik tombol CTA: gulir bila target #section, atau biarkan tautan biasa jalan. */
+const goToCta = (event) => {
+    menuOpen.value = false;
+
+    if (ctaIsSection.value) {
+        event.preventDefault();
+        goTo(ctaHref.value);
+    }
 };
 </script>
 
@@ -128,10 +143,12 @@ const goTo = (hash) => {
                 <div class="relative flex items-center gap-2">
                     <ThemeToggle />
 
-                    <a href="#ppdb"
+                    <a v-if="ctaLabel" :href="ctaHref"
+                        :target="ctaIsSection ? null : '_blank'"
+                        :rel="ctaIsSection ? null : 'noopener'"
                         class="group relative hidden overflow-hidden rounded-full bg-linear-to-r from-aqua-400 to-volt-400 px-5 py-2.5 text-sm font-bold text-void-950 shadow-[0_0_24px_rgba(52,226,245,0.45)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_36px_rgba(169,123,255,0.6)] sm:inline-block"
-                        @click.prevent="goTo('#ppdb')">
-                        <span class="relative z-10">Daftar PPDB</span>
+                        @click="goToCta">
+                        <span class="relative z-10">{{ ctaLabel }}</span>
                         <span
                             class="absolute inset-0 -translate-x-full bg-white/30 transition duration-500 group-hover:translate-x-0"></span>
                     </a>
@@ -170,11 +187,13 @@ const goTo = (hash) => {
                                 {{ link.label }}
                             </a>
                         </li>
-                        <li>
-                            <a href="#ppdb"
+                        <li v-if="ctaLabel">
+                            <a :href="ctaHref"
+                                :target="ctaIsSection ? null : '_blank'"
+                                :rel="ctaIsSection ? null : 'noopener'"
                                 class="mt-1 block rounded-2xl bg-linear-to-r from-aqua-400 to-volt-400 px-4 py-3 text-center text-sm font-bold text-void-950"
-                                @click.prevent="goTo('#ppdb')">
-                                Daftar PPDB
+                                @click="goToCta">
+                                {{ ctaLabel }}
                             </a>
                         </li>
                     </ul>

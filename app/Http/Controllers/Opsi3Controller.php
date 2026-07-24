@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Support\EventRepository;
 use App\Support\PageContent;
@@ -23,7 +24,21 @@ class Opsi3Controller extends Opsi2Controller
             'heroImage' => $this->heroImage(),
             'heroSlides' => $this->heroSlides(),
             'events' => $this->events(),
+            'gallery' => $this->gallery(),
         ]);
+    }
+
+    /**
+     * Foto galeri profil sekolah untuk carousel di beranda (maks. 10).
+     * Koleksi lengkapnya tampil di halaman /galeri.
+     */
+    protected function gallery(): array
+    {
+        return GalleryImage::active()->ordered()->limit(10)->get()
+            ->map(fn (GalleryImage $image) => $image->toCard())
+            ->filter(fn (array $image) => filled($image['src']))
+            ->values()
+            ->all();
     }
 
     /**

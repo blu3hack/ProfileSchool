@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\Opsi2Controller;
 use App\Http\Controllers\Opsi3Controller;
@@ -27,6 +28,9 @@ Route::get('/berita/{slug}', [NewsController::class, 'show'])->name('news.show')
 // Next Event: agenda kegiatan yang akan dilaksanakan + detail per acara.
 Route::get('/event', [EventController::class, 'index'])->name('events.index');
 Route::get('/event/{slug}', [EventController::class, 'show'])->name('events.show');
+
+// Galeri: seluruh foto profil sekolah — tujuan tombol "Lihat Semua" di beranda.
+Route::get('/galeri', [GalleryController::class, 'index'])->name('gallery.index');
 
 // Halaman sambutan bawaan, dipindah dari '/'.
 Route::get('/welcome', function () {

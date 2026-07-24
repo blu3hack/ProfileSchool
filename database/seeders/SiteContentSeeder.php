@@ -6,6 +6,7 @@ use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\ContactInfo;
 use App\Models\Event;
+use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\NavLink;
 use App\Models\News;
@@ -35,6 +36,7 @@ class SiteContentSeeder extends Seeder
         $this->seedPillars();
         $this->seedActivities();
         $this->seedAchievements();
+        $this->seedGallery();
         $this->seedContacts();
         $this->seedSocials();
         $this->seedNews();
@@ -71,6 +73,7 @@ class SiteContentSeeder extends Seeder
             ['label' => 'Next Event', 'hash' => '#event'],
             ['label' => 'Kegiatan', 'hash' => '#kegiatan'],
             ['label' => 'Prestasi', 'hash' => '#prestasi'],
+            ['label' => 'Galeri', 'hash' => '#galeri'],
             ['label' => 'Kontak', 'hash' => '#kontak'],
         ];
 
@@ -111,6 +114,13 @@ class SiteContentSeeder extends Seeder
     {
         foreach ($this->data('achievements') as $i => $row) {
             Achievement::updateOrCreate(['title' => $row['title']], [...$row, 'sort_order' => $i, 'is_active' => true]);
+        }
+    }
+
+    protected function seedGallery(): void
+    {
+        foreach ($this->data('gallery') as $i => $row) {
+            GalleryImage::updateOrCreate(['title' => $row['title']], [...$row, 'sort_order' => $i, 'is_active' => true]);
         }
     }
 
