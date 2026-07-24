@@ -166,7 +166,7 @@ class ThemePalette
      */
     protected static function ramp(string $mode, string $hex): array
     {
-        $mix = fn (int $pct, string $with) => "color-mix(in srgb, {$hex} {$pct}%, {$with})";
+        $mix = fn (int $pct, string $with) => self::mixHex($hex, $pct, $with);
 
         if ($mode === 'light') {
             return [
@@ -200,7 +200,7 @@ class ThemePalette
      */
     protected static function bgRamp(string $mode, string $hex): array
     {
-        $mix = fn (int $pct, string $with) => "color-mix(in srgb, {$hex} {$pct}%, {$with})";
+        $mix = fn (int $pct, string $with) => self::mixHex($hex, $pct, $with);
 
         if ($mode === 'light') {
             return [
@@ -218,6 +218,41 @@ class ThemePalette
             800 => $mix(88, '#ffffff'),
             700 => $mix(78, '#ffffff'),
             600 => $mix(66, '#ffffff'),
+        ];
+    }
+
+    /**
+     * Campur dua warna hex secara linear di ruang sRGB — setara
+     * `color-mix(in srgb, $hex $pct%, $with)` tetapi menghasilkan hex solid.
+     *
+     * Sengaja dihitung di server: hex solid didukung semua browser, sedangkan
+     * `color-mix()` bisa gagal di WebView/Safari lama sehingga gradasi yang
+     * memakainya (mis. tombol hero) ikut hilang.
+     */
+    protected static function mixHex(string $hex, int $pct, string $with): string
+    {
+        [$r1, $g1, $b1] = self::rgb($hex);
+        [$r2, $g2, $b2] = self::rgb($with);
+
+        $w = max(0, min(100, $pct)) / 100;
+
+        return sprintf(
+            '#%02x%02x%02x',
+            (int) round($r1 * $w + $r2 * (1 - $w)),
+            (int) round($g1 * $w + $g2 * (1 - $w)),
+            (int) round($b1 * $w + $b2 * (1 - $w)),
+        );
+    }
+
+    /** @return array{0:int,1:int,2:int} */
+    protected static function rgb(string $hex): array
+    {
+        $hex = ltrim($hex, '#');
+
+        return [
+            (int) hexdec(substr($hex, 0, 2)),
+            (int) hexdec(substr($hex, 2, 2)),
+            (int) hexdec(substr($hex, 4, 2)),
         ];
     }
 
