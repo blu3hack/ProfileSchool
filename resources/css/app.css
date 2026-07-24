@@ -1,0 +1,740 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Poppins', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* Hijau sage / emerald lembut — teduh & islami */
+    --color-sage-50: #f2f7f4;
+    --color-sage-100: #dfece4;
+    --color-sage-200: #c1d9cb;
+    --color-sage-300: #9bbfab;
+    --color-sage-400: #74a289;
+    --color-sage-500: #55866d;
+    --color-sage-600: #3f6b56;
+    --color-sage-700: #335647;
+    --color-sage-800: #2b453a;
+    --color-sage-900: #243931;
+
+    /* Krem / warm beige — ramah & hangat */
+    --color-cream-50: #fdfbf7;
+    --color-cream-100: #faf5ec;
+    --color-cream-200: #f3e9d8;
+    --color-cream-300: #e9d9bf;
+    --color-cream-400: #dcc4a0;
+    --color-cream-500: #cbab7d;
+
+    /* Aksen emas lembut */
+    --color-gold-300: #e6c98f;
+    --color-gold-400: #d9b26a;
+    --color-gold-500: #c69a4c;
+    --color-gold-600: #a87d36;
+}
+
+/* ============================================================
+   Palet tambahan untuk landing "Opsi 2" (Islamic Futuristic).
+   Pastel terang & lembut — bukan neon cyberpunk.
+   ============================================================ */
+@theme {
+    /* Mint / toska — nuansa teduh utama */
+    --color-mint-50: #f0fbf7;
+    --color-mint-100: #dcf5ec;
+    --color-mint-200: #b8ebd9;
+    --color-mint-300: #8adcc2;
+    --color-mint-400: #57c6a4;
+    --color-mint-500: #33a988;
+    --color-mint-600: #24886d;
+
+    /* Biru langit lembut — kesan modern & lapang */
+    --color-sky-soft-100: #e6f1fd;
+    --color-sky-soft-200: #c9e2fb;
+    --color-sky-soft-300: #a3cdf6;
+    --color-sky-soft-400: #74b0ec;
+    --color-sky-soft-500: #4f92dc;
+
+    /* Lilac pastel — aksen dingin penyeimbang emas */
+    --color-lilac-100: #f0edfd;
+    --color-lilac-200: #ded7fa;
+    --color-lilac-300: #c4b8f3;
+    --color-lilac-400: #a595e6;
+    --color-lilac-500: #8a77d4;
+
+    /* Kanvas dasar halaman opsi 2 */
+    --color-canvas-50: #fbfcfe;
+    --color-canvas-100: #f4f7fb;
+    --color-canvas-200: #eaf0f7;
+}
+
+/* ============================================================
+   Palet "Opsi 3" (Neo Cyber Madrasah) — dark mode futuristik,
+   neon aqua / plasma / volt di atas dasar biru-hitam.
+   ============================================================ */
+@theme {
+    /* Dasar gelap — "ruang hampa" tempat neon berpendar */
+    --color-void-950: #03050e;
+    --color-void-900: #060a19;
+    --color-void-800: #0b1226;
+    --color-void-700: #131c3a;
+    --color-void-600: #1d2a52;
+
+    /* Aqua / cyan — warna aksi utama */
+    --color-aqua-200: #b6fbff;
+    --color-aqua-300: #7cf3ff;
+    --color-aqua-400: #34e2f5;
+    --color-aqua-500: #0fc3dd;
+    --color-aqua-600: #0b95ac;
+
+    /* Plasma — magenta panas, aksen kontras */
+    --color-plasma-300: #ff9ae4;
+    --color-plasma-400: #ff5ecf;
+    --color-plasma-500: #e930b1;
+
+    /* Volt — ungu elektrik penyeimbang */
+    --color-volt-300: #c9b0ff;
+    --color-volt-400: #a97bff;
+    --color-volt-500: #8b4dff;
+
+    /* Solar — emas neon, menjaga nuansa islami tetap hangat */
+    --color-solar-300: #ffe08a;
+    --color-solar-400: #ffc73d;
+    --color-solar-500: #e5a410;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Lenis mengambil alih scroll; matikan smooth bawaan browser agar tidak bentrok. */
+    html.lenis,
+    html.lenis body {
+        scroll-behavior: auto;
+    }
+
+    body {
+        background-color: var(--color-cream-50);
+        color: var(--color-sage-900);
+    }
+
+    ::selection {
+        background-color: var(--color-sage-200);
+        color: var(--color-sage-900);
+    }
+}
+
+@layer utilities {
+    .container-page {
+        width: 100%;
+        margin-inline: auto;
+        max-width: 80rem;
+        padding-inline: 1.25rem;
+    }
+
+    @media (min-width: 640px) {
+        .container-page {
+            padding-inline: 2rem;
+        }
+    }
+}
+
+/* Pola geometris islami lembut untuk latar section. */
+.pattern-islamic {
+    background-image:
+        radial-gradient(circle at 50% 0%, rgba(85, 134, 109, 0.07) 0, transparent 55%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%2355866d' stroke-opacity='0.12' stroke-width='1'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30 Z'/%3E%3Ccircle cx='30' cy='30' r='14'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   Utilitas visual "Opsi 2" — glassmorphism, neomorphism halus,
+   glow pastel, dan ornamen geometri islami.
+   ============================================================ */
+
+/* Panel kaca: transparan + blur, dipakai navbar & kartu melayang. */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.62);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+        0 18px 50px -28px rgba(36, 57, 49, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.glass-panel-dark {
+    background: rgba(36, 57, 49, 0.55);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Permukaan neomorphic: cahaya dari kiri-atas, bayangan lembut kanan-bawah. */
+.neo-surface {
+    background: linear-gradient(145deg, #ffffff, var(--color-canvas-100));
+    box-shadow:
+        -8px -8px 20px rgba(255, 255, 255, 0.9),
+        10px 12px 30px -12px rgba(36, 57, 49, 0.22);
+}
+
+.neo-inset {
+    background: var(--color-canvas-100);
+    box-shadow:
+        inset 4px 4px 10px rgba(36, 57, 49, 0.08),
+        inset -4px -4px 10px rgba(255, 255, 255, 0.95);
+}
+
+/* Cahaya pastel di belakang elemen — lembut, tanpa kesan neon. */
+.glow-mint {
+    box-shadow: 0 22px 60px -24px rgba(51, 169, 136, 0.55);
+}
+
+.glow-gold {
+    box-shadow: 0 22px 60px -24px rgba(198, 154, 76, 0.5);
+}
+
+.glow-lilac {
+    box-shadow: 0 22px 60px -24px rgba(138, 119, 212, 0.45);
+}
+
+.glow-sky {
+    box-shadow: 0 22px 60px -24px rgba(79, 146, 220, 0.45);
+}
+
+/* Latar aurora: tiga noda warna pastel yang berpendar perlahan. */
+.aurora-bg {
+    position: relative;
+    background-color: var(--color-canvas-50);
+}
+
+.aurora-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(38rem 26rem at 12% 8%, rgba(138, 220, 194, 0.28), transparent 65%),
+        radial-gradient(34rem 24rem at 88% 18%, rgba(196, 184, 243, 0.26), transparent 65%),
+        radial-gradient(40rem 28rem at 60% 92%, rgba(230, 201, 143, 0.24), transparent 65%);
+    animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+    from {
+        transform: translate3d(-1.5%, -1%, 0) scale(1);
+    }
+
+    to {
+        transform: translate3d(1.5%, 1.5%, 0) scale(1.06);
+    }
+}
+
+/* Kisi geometri islami (pola bintang delapan) sebagai tekstur halus. */
+.pattern-lattice {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%2333a988' stroke-opacity='0.14' stroke-width='1'%3E%3Cpath d='M36 4 L68 36 L36 68 L4 36 Z'/%3E%3Cpath d='M13 13 L59 13 L59 59 L13 59 Z'/%3E%3Ccircle cx='36' cy='36' r='9'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Judul dengan gradasi warna pastel. */
+.text-gradient-lumen {
+    background-image: linear-gradient(110deg, var(--color-sage-800) 0%, var(--color-mint-500) 45%, var(--color-lilac-500) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Garis pemisah tipis yang memudar di kedua ujung. */
+.hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(51, 169, 136, 0.35), transparent);
+}
+
+/* Animasi mengambang untuk badge & kartu kecil. */
+.float-slow {
+    animation: float-y 7s ease-in-out infinite;
+}
+
+.float-slower {
+    animation: float-y 10s ease-in-out infinite;
+}
+
+@keyframes float-y {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-14px);
+    }
+}
+
+/* Kartu tilt 3D — perspektif diatur di pembungkus. */
+.tilt-scene {
+    perspective: 1000px;
+}
+
+.tilt-body {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.tilt-layer {
+    transform: translateZ(38px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .aurora-bg::before,
+    .float-slow,
+    .float-slower {
+        animation: none;
+    }
+}
+
+/* ============================================================
+   Utilitas visual "Opsi 3" — glassmorphism gelap tingkat lanjut,
+   neon glow, kisi cyber, dan panggung 3D.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Tema gelap ⇄ terang.
+
+   Trik utama: `[data-theme='light']` menimpa *variabel warna Tailwind*
+   (--color-void-*, --color-slate-*, --color-aqua-*, …). Karena utilitas
+   Tailwind v4 selalu merujuk var tersebut, seluruh kelas seperti
+   `text-slate-50` atau `bg-void-950` otomatis ikut berganti — tanpa perlu
+   menulis varian `dark:` di ratusan tempat. Atribut hanya dipasang pada
+   root halaman Opsi 3, jadi halaman lain tidak terpengaruh.
+   ------------------------------------------------------------ */
+[data-theme='dark'] {
+    color-scheme: dark;
+
+    --panel-bg: linear-gradient(155deg, rgba(19, 28, 58, 0.78), rgba(6, 10, 25, 0.62));
+    --panel-border: rgba(124, 243, 255, 0.18);
+    --panel-shadow: 0 26px 70px -34px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(182, 251, 255, 0.16);
+
+    --panel-lite-bg: linear-gradient(155deg, rgba(29, 42, 82, 0.55), rgba(11, 18, 38, 0.42));
+    --panel-lite-border: rgba(182, 251, 255, 0.22);
+    --panel-lite-shadow: inset 0 1px 0 rgba(182, 251, 255, 0.2);
+
+    --grid-line: rgba(52, 226, 245, 0.16);
+    --floor-line-a: rgba(52, 226, 245, 0.28);
+    --floor-line-b: rgba(169, 123, 255, 0.28);
+    --scan-tint: rgba(182, 251, 255, 0.05);
+    --scan-sweep: rgba(52, 226, 245, 0.14);
+    --glow-text: 0 0 18px rgba(52, 226, 245, 0.55), 0 0 42px rgba(15, 195, 221, 0.35);
+
+    --nebula-1: rgba(15, 195, 221, 0.20);
+    --nebula-2: rgba(139, 77, 255, 0.18);
+    --nebula-3: rgba(233, 48, 177, 0.14);
+
+    /* Selubung hero. Sengaja tipis supaya foto gedung sekolah tetap terlihat;
+       kontras teks dijaga oleh `--veil-scrim` yang hanya menutup sisi kiri. */
+    --veil-scrim: linear-gradient(102deg, rgba(3, 5, 14, 0.78) 0%, rgba(3, 5, 14, 0.3) 46%, transparent 72%);
+    --veil-tone: linear-gradient(to bottom,
+            rgba(3, 5, 14, 0.42) 0%,
+            rgba(3, 5, 14, 0.04) 40%,
+            rgba(3, 5, 14, 0.34) 80%,
+            var(--color-void-950) 100%);
+    --veil-vignette: radial-gradient(125% 95% at 50% 42%, transparent 34%, rgba(3, 5, 14, 0.45) 100%);
+    --veil-tint: linear-gradient(150deg, rgba(15, 195, 221, 0.22), rgba(139, 77, 255, 0.14) 48%, rgba(233, 48, 177, 0.2));
+    --veil-photo-filter: saturate(1.15) contrast(1.05) brightness(1.08);
+
+    --deck-accent-mix: 88%;
+    --deck-tail: var(--color-void-950);
+}
+
+[data-theme='light'] {
+    color-scheme: light;
+
+    /* Dasar & permukaan — biru-putih dingin, tetap terasa futuristik. */
+    --color-void-950: #eef3fb;
+    --color-void-900: #e3ebf7;
+    --color-void-800: #f8fbff;
+    --color-void-700: #d2ddef;
+    --color-void-600: #b7c8e3;
+
+    /* Skala teks dibalik: slate-50 jadi tinta paling pekat. */
+    --color-slate-50: #0a1124;
+    --color-slate-100: #101a35;
+    --color-slate-200: #1a2547;
+    --color-slate-300: #313f5d;
+    --color-slate-400: #56637f;
+    --color-slate-500: #6d7a99;
+
+    /* Neon diturunkan luminansinya agar tetap kontras di atas putih. */
+    --color-aqua-200: #085c6d;
+    --color-aqua-300: #077f95;
+    --color-aqua-400: #0aa2bd;
+    --color-aqua-500: #0b8ba3;
+    --color-aqua-600: #076777;
+
+    --color-plasma-300: #ad1a80;
+    --color-plasma-400: #d3299d;
+    --color-plasma-500: #b32287;
+
+    --color-volt-300: #6231cc;
+    --color-volt-400: #7c3aed;
+    --color-volt-500: #6725d9;
+
+    --color-solar-300: #96660a;
+    --color-solar-400: #c98d0f;
+    --color-solar-500: #a8750c;
+
+    --panel-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.88), rgba(232, 240, 252, 0.74));
+    --panel-border: rgba(11, 139, 163, 0.22);
+    --panel-shadow: 0 24px 55px -32px rgba(16, 36, 72, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    --panel-lite-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.55));
+    --panel-lite-border: rgba(255, 255, 255, 0.9);
+    --panel-lite-shadow: 0 18px 40px -30px rgba(16, 36, 72, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    --grid-line: rgba(11, 139, 163, 0.18);
+    --floor-line-a: rgba(11, 139, 163, 0.3);
+    --floor-line-b: rgba(124, 58, 237, 0.26);
+    --scan-tint: rgba(10, 17, 36, 0.045);
+    --scan-sweep: rgba(11, 139, 163, 0.12);
+    --glow-text: none;
+
+    --nebula-1: rgba(15, 195, 221, 0.16);
+    --nebula-2: rgba(139, 77, 255, 0.14);
+    --nebula-3: rgba(233, 48, 177, 0.12);
+
+    /* Versi terang: kabut putih, foto tetap dominan. */
+    --veil-scrim: linear-gradient(102deg, rgba(238, 243, 251, 0.9) 0%, rgba(238, 243, 251, 0.45) 46%, transparent 72%);
+    --veil-tone: linear-gradient(to bottom,
+            rgba(238, 243, 251, 0.5) 0%,
+            rgba(238, 243, 251, 0.12) 40%,
+            rgba(238, 243, 251, 0.45) 80%,
+            var(--color-void-950) 100%);
+    --veil-vignette: radial-gradient(125% 95% at 50% 42%, rgba(255, 255, 255, 0.15) 34%, rgba(238, 243, 251, 0.6) 100%);
+    --veil-tint: linear-gradient(150deg, rgba(15, 195, 221, 0.16), rgba(139, 77, 255, 0.1) 48%, rgba(233, 48, 177, 0.14));
+    --veil-photo-filter: saturate(1.05) contrast(1.02) brightness(1.02);
+
+    --deck-accent-mix: 24%;
+    --deck-tail: var(--color-void-900);
+}
+
+/* Latar halaman: dua nebula neon yang bergeser perlahan di atas warna dasar. */
+.void-bg {
+    position: relative;
+    background-color: var(--color-void-950);
+    transition: background-color 0.5s ease;
+}
+
+.void-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(42rem 30rem at 8% 6%, var(--nebula-1), transparent 62%),
+        radial-gradient(38rem 28rem at 92% 22%, var(--nebula-2), transparent 62%),
+        radial-gradient(46rem 32rem at 50% 100%, var(--nebula-3), transparent 62%);
+    animation: nebula-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+    from {
+        transform: translate3d(-2%, -1.5%, 0) scale(1);
+    }
+
+    to {
+        transform: translate3d(2%, 1.5%, 0) scale(1.08);
+    }
+}
+
+/* Kisi perspektif ala cyberpunk — dipakai sebagai lantai section. */
+.cyber-grid {
+    background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 3.5rem 3.5rem;
+    mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
+}
+
+/* Kisi yang "berlari" menjauh — ilusi lantai bergerak. */
+.cyber-floor {
+    background-image:
+        linear-gradient(to right, var(--floor-line-a) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--floor-line-b) 1px, transparent 1px);
+    background-size: 4rem 4rem;
+    transform: perspective(28rem) rotateX(68deg);
+    transform-origin: center bottom;
+    animation: floor-run 6s linear infinite;
+}
+
+@keyframes floor-run {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 0 4rem;
+    }
+}
+
+/* Panel kaca: blur tinggi + tepi bercahaya. Warnanya mengikuti tema aktif. */
+.holo-panel {
+    position: relative;
+    background: var(--panel-bg);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Varian lebih tipis untuk elemen yang perlu menonjol di atas foto. */
+.holo-panel-lite {
+    background: var(--panel-lite-bg);
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    border: 1px solid var(--panel-lite-border);
+    box-shadow: var(--panel-lite-shadow);
+    transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+/* Selubung hero: gradasi futuristik yang menyatukan foto dengan tema,
+   dibuat setipis mungkin agar gedung sekolah tetap terbaca jelas. */
+.hero-veil {
+    background:
+        var(--veil-tint),
+        var(--veil-scrim),
+        var(--veil-tone),
+        var(--veil-vignette);
+}
+
+.hero-photo {
+    filter: var(--veil-photo-filter);
+}
+
+/* Permukaan kartu kegiatan — aksen diatur lewat `--deck-accent` inline. */
+.deck-surface {
+    background: linear-gradient(140deg,
+            color-mix(in oklab, var(--deck-accent, var(--color-aqua-500)) var(--deck-accent-mix), transparent) 0%,
+            var(--color-void-800) 58%,
+            var(--deck-tail) 100%);
+}
+
+/* Tepi gradasi berjalan — "conic border" khas UI futuristik. */
+.holo-edge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--edge-angle, 0deg),
+            rgba(52, 226, 245, 0.9),
+            rgba(169, 123, 255, 0.7),
+            rgba(255, 94, 207, 0.85),
+            rgba(52, 226, 245, 0.9));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+    pointer-events: none;
+}
+
+.holo-edge:hover::before {
+    opacity: 1;
+    animation: edge-spin 4s linear infinite;
+}
+
+@property --edge-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes edge-spin {
+    to {
+        --edge-angle: 360deg;
+    }
+}
+
+/* Sudut bracket ala HUD — digambar dengan dua gradasi sudut. */
+.hud-corner {
+    position: relative;
+}
+
+.hud-corner::after {
+    content: '';
+    position: absolute;
+    inset: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background:
+        linear-gradient(to right, rgba(52, 226, 245, 0.55) 0 1.5rem, transparent 1.5rem) top left / 100% 1px no-repeat,
+        linear-gradient(to left, rgba(255, 94, 207, 0.55) 0 1.5rem, transparent 1.5rem) bottom right / 100% 1px no-repeat,
+        linear-gradient(to bottom, rgba(52, 226, 245, 0.55) 0 1.5rem, transparent 1.5rem) top left / 1px 100% no-repeat,
+        linear-gradient(to top, rgba(255, 94, 207, 0.55) 0 1.5rem, transparent 1.5rem) bottom right / 1px 100% no-repeat;
+    pointer-events: none;
+}
+
+/* Pendar neon — dipakai pada kartu, tombol, dan ikon. */
+.neon-aqua {
+    box-shadow:
+        0 0 0 1px rgba(52, 226, 245, 0.25),
+        0 18px 60px -22px rgba(15, 195, 221, 0.85);
+}
+
+.neon-plasma {
+    box-shadow:
+        0 0 0 1px rgba(255, 94, 207, 0.25),
+        0 18px 60px -22px rgba(233, 48, 177, 0.8);
+}
+
+.neon-volt {
+    box-shadow:
+        0 0 0 1px rgba(169, 123, 255, 0.25),
+        0 18px 60px -22px rgba(139, 77, 255, 0.8);
+}
+
+.neon-solar {
+    box-shadow:
+        0 0 0 1px rgba(255, 199, 61, 0.25),
+        0 18px 60px -22px rgba(229, 164, 16, 0.75);
+}
+
+/* Teks yang seolah menyala. */
+.text-glow-aqua {
+    text-shadow: var(--glow-text);
+}
+
+.text-gradient-neon {
+    background-image: linear-gradient(110deg, var(--color-aqua-300) 0%, var(--color-volt-400) 48%, var(--color-plasma-400) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Garis pemisah neon yang memudar di kedua ujung. */
+.hairline-neon {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(52, 226, 245, 0.6), rgba(255, 94, 207, 0.4), transparent);
+}
+
+/* Garis pindai horizontal yang turun perlahan — nuansa monitor holografik. */
+.scanlines {
+    background-image: repeating-linear-gradient(to bottom,
+            var(--scan-tint) 0 1px,
+            transparent 1px 4px);
+}
+
+.scan-sweep::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: 35%;
+    top: -35%;
+    background: linear-gradient(to bottom, transparent, var(--scan-sweep), transparent);
+    animation: scan-fall 5.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes scan-fall {
+    0% {
+        top: -35%;
+    }
+
+    100% {
+        top: 105%;
+    }
+}
+
+/* Kisi geometri islami versi neon. */
+.pattern-lattice-neon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%2334e2f5' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M36 4 L68 36 L36 68 L4 36 Z'/%3E%3Cpath d='M13 13 L59 13 L59 59 L13 59 Z'/%3E%3Ccircle cx='36' cy='36' r='9'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Panggung 3D bertingkat: perspektif lebih dalam dari Opsi 2. */
+.stage-3d {
+    perspective: 1400px;
+    perspective-origin: 50% 40%;
+}
+
+.stage-body {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Lapisan kedalaman — makin besar angkanya, makin "melayang" ke depan. */
+.depth-1 {
+    transform: translateZ(28px);
+}
+
+.depth-2 {
+    transform: translateZ(56px);
+}
+
+.depth-3 {
+    transform: translateZ(92px);
+}
+
+/* Denyut halus untuk indikator & node linimasa. */
+.pulse-node {
+    animation: pulse-node 2.8s ease-in-out infinite;
+}
+
+@keyframes pulse-node {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(52, 226, 245, 0.45);
+    }
+
+    60% {
+        box-shadow: 0 0 0 14px rgba(52, 226, 245, 0);
+    }
+}
+
+/* Melayang dengan sedikit rotasi — lebih hidup dari float-y biasa. */
+.float-3d {
+    animation: float-3d 9s ease-in-out infinite;
+}
+
+.float-3d-slow {
+    animation: float-3d 13s ease-in-out infinite reverse;
+}
+
+@keyframes float-3d {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    33% {
+        transform: translate3d(6px, -16px, 0) rotate(1.2deg);
+    }
+
+    66% {
+        transform: translate3d(-6px, -8px, 0) rotate(-1.2deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .void-bg::before,
+    .cyber-floor,
+    .float-3d,
+    .float-3d-slow,
+    .pulse-node,
+    .scan-sweep::after,
+    .holo-edge:hover::before {
+        animation: none;
+    }
+}
