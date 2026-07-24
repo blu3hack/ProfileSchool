@@ -25,10 +25,12 @@ const accents = {
 
 const accentOf = (name) => accents[name] ?? accents.mint;
 
-// Offset & rotasi lebih besar dari Opsi 2 supaya tumpukan terasa dalam.
+// Offset & rotasi tumpukan. Dibuat lebih kecil dari sebelumnya agar "fan"
+// kartu tidak menjulur jauh keluar bingkai swiper — penting di mobile yang
+// sempit supaya tumpukan tetap utuh (tidak terpotong tepi section).
 const cards = {
-    perSlideOffset: 12,
-    perSlideRotate: 4,
+    perSlideOffset: 8,
+    perSlideRotate: 3,
     slideShadows: false,
 };
 
@@ -72,13 +74,23 @@ const hasLoop = props.items.length > 2;
 <style scoped>
 .deck-swiper {
     width: 100%;
-    max-width: 23rem;
+    /* Mobile: kartu dipersempit supaya tumpukan (fan EffectCards) punya ruang
+       simetris di kiri-kanan dan tidak terpotong tepi section (overflow-hidden).
+       Dipusatkan lewat margin auto; dilebarkan lagi mulai breakpoint sm. */
+    max-width: 18rem;
     height: 25rem;
+    margin-inline: auto;
     overflow: visible;
     /* Biarkan halaman tetap bisa di-scroll vertikal saat jari menggeser kartu
        ke samping; hanya gerak horizontal yang ditangani carousel. Ini yang
        membuat swipe terasa "menempel" di jari tanpa menahan scroll. */
     touch-action: pan-y;
+}
+
+@media (min-width: 640px) {
+    .deck-swiper {
+        max-width: 23rem;
+    }
 }
 
 .deck-swiper :deep(.swiper-slide) {
