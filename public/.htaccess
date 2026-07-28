@@ -1,15 +1,22 @@
 # Aset build Vite memakai nama ber-hash yang ikut berganti tiap kali isinya
 # berubah, jadi aman disimpan browser selamanya. Gambar unggahan bisa
 # tertimpa dengan nama sama, jadi cukup sebulan.
-<IfModule mod_headers.c>
-    <FilesMatch "\.(js|css|woff2?)$">
-        Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
+#
+# Sengaja tanpa pembungkus <IfModule mod_headers.c>: LiteSpeed di server
+# produksi menjalankan direktif Header tapi tidak melaporkan modulnya,
+# sehingga blok berpembungkus tak pernah aktif.
+#
+# CATATAN produksi: aturan ini hanya berlaku bila berkasnya berada di dalam
+# document root secara fisik. LiteSpeed melewati .htaccess untuk path yang
+# dicapai lewat symlink ke luar docroot — kondisi docroot smpialazka.sch.id
+# saat ini, di mana /build dan /storage adalah symlink.
+<FilesMatch "\.(js|css|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
 
-    <FilesMatch "\.(jpe?g|png|webp|avif|gif|svg|ico)$">
-        Header set Cache-Control "public, max-age=2592000"
-    </FilesMatch>
-</IfModule>
+<FilesMatch "\.(jpe?g|png|webp|avif|gif|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000"
+</FilesMatch>
 
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
