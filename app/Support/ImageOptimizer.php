@@ -20,6 +20,9 @@ class ImageOptimizer
 
     public const QUALITY = 82;
 
+    /** Ambang penghematan agar berkas layak ditulis ulang (10%). */
+    private const MIN_SAVING = 0.10;
+
     /**
      * Batas aman agar gambar raksasa tidak menghabiskan memori: GD memuat
      * gambar tanpa kompresi, 4 byte per piksel — 50 MP saja sudah ~200 MB.
@@ -65,11 +68,12 @@ class ImageOptimizer
 
             clearstatcache(true, $temporary);
 
-            // Encoder PNG milik GD kerap menghasilkan berkas lebih besar dari
-            // aslinya (logo situs sempat 528 KB -> 599 KB). Menulisnya balik
-            // justru memperlambat halaman, jadi hasil yang tidak lebih kecil
-            // dibuang dan berkas asli dibiarkan utuh.
-            if (! $ok || filesize($temporary) >= filesize($path)) {
+            // Hasil ditulis hanya bila penghematannya berarti. Dua alasan:
+            // encoder PNG milik GD kerap justru membengkak (logo situs sempat
+            // 528 KB -> 599 KB), dan tanpa ambang ini menjalankan perintah dua
+            // kali akan mengompresi ulang berkas yang sudah optimal — ukurannya
+            // nyaris tak berubah tapi kualitasnya tergerus tiap kali.
+            if (! $ok || filesize($temporary) > filesize($path) * (1 - self::MIN_SAVING)) {
                 return false;
             }
 

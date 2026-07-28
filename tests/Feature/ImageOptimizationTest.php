@@ -113,6 +113,23 @@ class ImageOptimizationTest extends TestCase
         $this->assertLessThanOrEqual($before, Storage::disk('public')->size($path));
     }
 
+    public function test_menjalankan_backfill_dua_kali_tidak_mengompresi_ulang(): void
+    {
+        Storage::fake('public');
+
+        $path = 'uploads/2026/07/foto-lama.jpg';
+        Storage::disk('public')->put($path, UploadedFile::fake()->image('x.jpg', 5000, 4000)->getContent());
+
+        $this->artisan('images:optimize')->assertSuccessful();
+        $sesudahSekali = Storage::disk('public')->get($path);
+
+        $this->artisan('images:optimize')->assertSuccessful();
+
+        // Isi berkas wajib identik: kompresi lossy berulang menggerus kualitas
+        // tanpa menghemat ukuran yang berarti.
+        $this->assertSame($sesudahSekali, Storage::disk('public')->get($path));
+    }
+
     public function test_dry_run_tidak_mengubah_berkas(): void
     {
         Storage::fake('public');
