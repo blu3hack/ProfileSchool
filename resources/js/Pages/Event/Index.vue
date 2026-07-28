@@ -94,8 +94,8 @@ const resetFilter = () => {
                     <div class="cyber-grid absolute inset-0 opacity-40"></div>
                     <div class="scanlines absolute inset-0 opacity-50"></div>
                 </div>
-                <div v-parallax="{ y: 120, speed: 1.1 }"
-                    class="pointer-events-none absolute -left-32 top-10 -z-10 h-80 w-80 rounded-full bg-volt-500/20 blur-3xl">
+                <div v-parallax="{ y: 120, speed: 1.1 }" style="--orb-color: rgba(139, 77, 255, 0.28)"
+                    class="orb-glow pointer-events-none absolute -left-32 top-10 -z-10 h-80 w-80">
                 </div>
                 <div v-parallax="{ y: 100, speed: -0.8, rotate: 18 }"
                     class="pointer-events-none absolute -right-24 top-28 -z-10 h-64 w-64 rotate-[22.5deg] rounded-[4rem] border border-aqua-400/30">
@@ -281,8 +281,8 @@ const resetFilter = () => {
 
             <!-- ======================== ARSIP TERLAKSANA ======================== -->
             <section v-if="props.past.length" class="relative overflow-hidden pb-28">
-                <div v-parallax="{ y: 100, speed: -0.9 }"
-                    class="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-plasma-500/15 blur-3xl">
+                <div v-parallax="{ y: 100, speed: -0.9 }" style="--orb-color: rgba(233, 48, 177, 0.22)"
+                    class="orb-glow pointer-events-none absolute -right-24 top-0 h-72 w-72">
                 </div>
 
                 <div class="container-page relative">

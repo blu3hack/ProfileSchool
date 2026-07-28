@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { gsap, ScrollTrigger } from '../../lib/smooth-scroll';
+import { gsap, refreshScrollTriggers } from '../../lib/smooth-scroll';
 
 /**
  * Linimasa prestasi versi neon: "data stream" vertikal yang terisi mengikuti
@@ -82,7 +82,8 @@ onMounted(() => {
         });
 
         // Konten baru bisa menggeser layout — hitung ulang sekali setelah mount.
-        ScrollTrigger.refresh();
+        // Digabung dengan permintaan refresh komponen lain di frame yang sama.
+        refreshScrollTriggers();
     }, root.value);
 });
 

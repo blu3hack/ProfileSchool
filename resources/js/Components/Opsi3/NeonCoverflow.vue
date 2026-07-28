@@ -58,7 +58,7 @@ const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/be
                         <div class="pattern-lattice-neon absolute inset-0 opacity-25"></div>
                         <div class="scanlines absolute inset-0 opacity-60"></div>
 
-                        <img v-if="item.image" :src="item.image" :alt="item.title" loading="lazy"
+                        <img v-if="item.image" :src="item.image" :alt="item.title" loading="lazy" decoding="async"
                             class="relative h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105 group-hover:opacity-100">
                         <span v-else
                             class="depth-2 relative text-5xl drop-shadow-[0_0_18px_rgba(52,226,245,0.6)] transition duration-500 group-hover:-translate-y-1">

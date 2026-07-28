@@ -12,7 +12,7 @@ import NeonTimeline from '../Components/Opsi3/NeonTimeline.vue';
 import GalleryCarousel from '../Components/Opsi3/GalleryCarousel.vue';
 import GalleryLightbox from '../Components/Opsi3/GalleryLightbox.vue';
 import NeonFooter from '../Components/Opsi3/NeonFooter.vue';
-import { getSmoothScroll, gsap, ScrollTrigger } from '../lib/smooth-scroll';
+import { getSmoothScroll, gsap, refreshScrollTriggers, ScrollTrigger } from '../lib/smooth-scroll';
 import { newsAccent } from '../lib/news-accent';
 import { useSlideshow } from '../lib/slideshow';
 import { useTheme } from '../lib/theme';
@@ -183,11 +183,18 @@ onMounted(() => {
             .from('[data-hero-text]', { y: 28, opacity: 0, duration: 0.9 }, '-=0.75')
             .from('[data-hero-cta] > *', { y: 24, opacity: 0, duration: 0.7, stagger: 0.12 }, '-=0.6');
 
-        // Foto latar ikut bergerak lebih lambat + membesar → paralaks berlapis.
+        // Foto latar ikut bergerak lebih lambat → paralaks berlapis.
+        //
+        // PENTING: hanya `yPercent` yang dianimasikan, TIDAK `scale`.
+        // Foto hero memakai `filter` (lihat `.hero-photo` di app.css). Selama
+        // elemen cuma digeser, hasil filter cukup di-raster sekali lalu digeser
+        // oleh compositor. Begitu ikut diperbesar, ukuran rasternya berubah tiap
+        // frame sehingga filter seluas layar dihitung ulang terus — inilah
+        // sumber utama gulir tersendat di section hero. Pembesarannya kini
+        // statis lewat kelas `scale-110` di templat.
         if (heroPhoto.value) {
             gsap.to(heroPhoto.value, {
-                yPercent: 18,
-                scale: 1.18,
+                yPercent: 15,
                 ease: 'none',
                 scrollTrigger: {
                     trigger: hero.value,
@@ -220,7 +227,9 @@ onMounted(() => {
             onEnterBack: () => tl.restart(),
         });
 
-        ScrollTrigger.refresh();
+        // Digabung dengan permintaan refresh komponen anak di frame yang sama,
+        // supaya seluruh halaman hanya sekali menghitung ulang posisi trigger.
+        refreshScrollTriggers();
     });
 });
 
@@ -247,9 +256,10 @@ onBeforeUnmount(() => ctx?.revert());
                      hilang-lalu-muncul. Paralaks dipasang di pembungkusnya
                      supaya seluruh tumpukan bergerak bersama. -->
                 <div class="absolute inset-0 -z-30 overflow-hidden">
-                    <div ref="heroPhoto" class="relative h-full w-full scale-105">
+                    <div ref="heroPhoto" class="relative h-full w-full scale-110">
                         <img v-for="(slide, index) in heroSlides" :key="slide.src" :src="slide.src" :alt="slide.alt"
                             :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'"
+                            :decoding="index === 0 ? 'sync' : 'async'"
                             :aria-hidden="index === activeSlide ? 'false' : 'true'"
                             class="hero-photo hero-slide absolute inset-0 h-full w-full object-cover object-center"
                             :class="index === activeSlide ? 'opacity-100' : 'opacity-0'">
@@ -385,7 +395,7 @@ onBeforeUnmount(() => ctx?.revert());
                                      gradasi bawah melebur foto ke panel gelap agar teks tetap terbaca. -->
                                 <div v-if="pillar.image"
                                     class="relative aspect-16/10 w-full overflow-hidden sm:aspect-video">
-                                    <img :src="pillar.image" :alt="pillar.title" loading="lazy"
+                                    <img :src="pillar.image" :alt="pillar.title" loading="lazy" decoding="async"
                                         class="h-full w-full object-cover object-center transition duration-700 group-hover/card:scale-105">
                                     <div
                                         class="pointer-events-none absolute inset-0 bg-linear-to-t from-void-950 via-void-950/45 to-transparent">
@@ -435,8 +445,8 @@ onBeforeUnmount(() => ctx?.revert());
             <!-- =========================== BERITA =========================== -->
             <section id="berita" class="relative scroll-mt-28 overflow-hidden py-24 sm:py-32">
                 <!-- Ornamen berlapis paraks: bergerak lebih lambat dari konten. -->
-                <div v-parallax="{ y: 140, speed: 1.2 }"
-                    class="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-aqua-500/20 blur-3xl">
+                <div v-parallax="{ y: 140, speed: 1.2 }" style="--orb-color: rgba(15, 195, 221, 0.28)"
+                    class="orb-glow pointer-events-none absolute -left-32 top-10 h-80 w-80">
                 </div>
                 <div v-parallax="{ y: 120, speed: -0.8, rotate: 20 }"
                     class="pointer-events-none absolute -right-24 top-40 h-64 w-64 rotate-[22.5deg] rounded-[4rem] border border-plasma-400/30">
@@ -473,8 +483,8 @@ onBeforeUnmount(() => ctx?.revert());
 
             <!-- ========================= NEXT EVENT ========================= -->
             <section id="event" class="relative scroll-mt-28 overflow-hidden py-24 sm:py-32">
-                <div v-parallax="{ y: 120, speed: -1 }"
-                    class="pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-volt-500/20 blur-3xl">
+                <div v-parallax="{ y: 120, speed: -1 }" style="--orb-color: rgba(139, 77, 255, 0.28)"
+                    class="orb-glow pointer-events-none absolute -right-32 top-16 h-80 w-80">
                 </div>
                 <div v-parallax="{ y: 90, speed: 0.8, rotate: -18 }"
                     class="pointer-events-none absolute -left-20 bottom-24 h-56 w-56 rotate-[22.5deg] rounded-[4rem] border border-aqua-400/25">
@@ -516,7 +526,7 @@ onBeforeUnmount(() => ctx?.revert());
                                     <div class="relative h-56 overflow-hidden bg-linear-to-br lg:h-full lg:min-h-[24rem]"
                                         :class="featuredEventAccent.media">
                                         <img v-if="featuredEvent.image" :src="featuredEvent.image"
-                                            :alt="featuredEvent.title" loading="lazy"
+                                            :alt="featuredEvent.title" loading="lazy" decoding="async"
                                             class="h-full w-full object-cover opacity-85 transition duration-700 group-hover:scale-105 group-hover:opacity-100">
                                         <div v-else class="flex h-full w-full items-center justify-center text-6xl">
                                             {{ featuredEvent.icon }}
@@ -625,8 +635,14 @@ onBeforeUnmount(() => ctx?.revert());
                         <div v-reveal="replay({ from: 'zoom', delay: 0.2 })"
                             class="flex justify-center lg:col-span-7 lg:justify-end">
                             <div v-parallax="{ y: 60, speed: 0.6 }" class="relative">
-                                <div
-                                    class="pointer-events-none absolute -inset-10 rounded-[3rem] bg-linear-to-br from-aqua-500/30 via-volt-500/25 to-plasma-500/25 blur-3xl">
+                                <!-- Pendar latar. Sengaja gradient, bukan `blur-3xl`: elemen
+                                     ini ikut bergerak mengikuti gulir, dan mengaburkan ulang
+                                     bidang sebesar ini tiap frame jauh lebih mahal daripada
+                                     menggambar gradasi yang sudah lembut sejak awal. -->
+                                <div class="pointer-events-none absolute -inset-10 rounded-[3rem]" style="background:
+                                        radial-gradient(60% 60% at 28% 22%, rgba(15, 195, 221, 0.3), transparent 70%),
+                                        radial-gradient(60% 60% at 78% 80%, rgba(233, 48, 177, 0.24), transparent 70%),
+                                        radial-gradient(70% 70% at 50% 50%, rgba(139, 77, 255, 0.22), transparent 72%)">
                                 </div>
                                 <ActivityDeck :items="props.activities" />
                             </div>
@@ -637,8 +653,8 @@ onBeforeUnmount(() => ctx?.revert());
 
             <!-- ========================== PRESTASI ========================== -->
             <section id="prestasi" class="relative scroll-mt-28 overflow-hidden py-24 sm:py-32">
-                <div v-parallax="{ y: 100, speed: -1 }"
-                    class="pointer-events-none absolute right-0 top-24 h-96 w-96 rounded-full bg-solar-400/12 blur-3xl">
+                <div v-parallax="{ y: 100, speed: -1 }" style="--orb-color: rgba(255, 199, 61, 0.18)"
+                    class="orb-glow pointer-events-none absolute right-0 top-24 h-96 w-96">
                 </div>
 
                 <div class="container-page relative">
@@ -667,8 +683,8 @@ onBeforeUnmount(() => ctx?.revert());
 
             <!-- =========================== GALERI =========================== -->
             <section v-if="props.gallery.length" id="galeri" class="relative scroll-mt-28 overflow-hidden py-24 sm:py-32">
-                <div v-parallax="{ y: 90, speed: -0.9 }"
-                    class="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-plasma-500/15 blur-3xl">
+                <div v-parallax="{ y: 90, speed: -0.9 }" style="--orb-color: rgba(233, 48, 177, 0.22)"
+                    class="orb-glow pointer-events-none absolute -left-24 top-24 h-80 w-80">
                 </div>
 
                 <div class="container-page relative">

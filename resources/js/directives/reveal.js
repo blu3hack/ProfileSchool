@@ -33,6 +33,32 @@ export const reveal = {
         const targets = stagger ? Array.from(el.children) : el;
         const fromVars = presets[from] ?? presets.up;
 
+        /**
+         * Selama animasi berjalan, elemen ditandai `reveal-running`.
+         *
+         * Alasannya: sebagian besar `v-reveal` membungkus panel ber-
+         * `backdrop-filter` (kartu keunggulan, kartu berita). Menganimasikan
+         * opacity/transform di atas subtree ber-backdrop-filter memaksa browser
+         * menyaring ulang seluruh isinya tiap frame — persis jeda yang terasa
+         * saat sebuah section baru masuk layar. Kelas ini menukar panel ke latar
+         * solid selama animasi (lihat `.reveal-running` di app.css), lalu efek
+         * kacanya dikembalikan begitu animasi selesai.
+         */
+        let isRunning = false;
+
+        // Penjaga agar `onUpdate` (dipanggil tiap frame) hanya menyentuh DOM
+        // sekali di awal dan sekali di akhir animasi. `onUpdate` dipakai —
+        // bukan `onStart` — karena `onStart` tidak ikut terpicu saat tween
+        // diputar mundur (`once: false`).
+        const running = (state) => {
+            if (isRunning === state) {
+                return;
+            }
+
+            isRunning = state;
+            el.classList.toggle('reveal-running', state);
+        };
+
         const tween = gsap.from(targets, {
             ...fromVars,
             duration,
@@ -40,6 +66,9 @@ export const reveal = {
             stagger,
             ease: 'power3.out',
             paused: true,
+            onUpdate: () => running(true),
+            onComplete: () => running(false),
+            onReverseComplete: () => running(false),
         });
 
         el._revealTrigger = ScrollTrigger.create({

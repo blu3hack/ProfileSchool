@@ -105,13 +105,16 @@
 }
 
 @layer base {
-    html {
-        scroll-behavior: smooth;
-    }
+    /* Gulir mulus diurus Lenis, bukan browser.
 
-    /* Lenis mengambil alih scroll; matikan smooth bawaan browser agar tidak bentrok. */
-    html.lenis,
-    html.lenis body {
+       Dulu `smooth` jadi bawaan dan baru dimatikan lewat `html.lenis` — padahal
+       kelas itu baru terpasang setelah bundel JS dijalankan. Di muat pertama
+       dengan cache kosong, jendela sebelum itu cukup lebar: pemulihan posisi
+       gulir dan klik anchor masih memakai animasi bawaan browser yang lalu
+       bertabrakan dengan Lenis saat ia mengambil alih. Kini `auto` sejak awal:
+       satu-satunya yang menganimasikan gulir adalah Lenis. */
+    html,
+    html body {
         scroll-behavior: auto;
     }
 
@@ -278,6 +281,15 @@
 
 .tilt-body {
     transform-style: preserve-3d;
+}
+
+/* `will-change` hanya saat kursor benar-benar di atas kartu. Bila dipasang
+   permanen, SETIAP kartu tilt di halaman (empat kartu keunggulan + seluruh
+   slide berita) dipromosikan jadi lapisan compositor tersendiri sejak dimuat —
+   memori GPU membengkak dan seluruh lapisan itu dibuat serentak saat mount,
+   tepat ketika halaman sedang sibuk. Kemiringannya sendiri hanya terjadi saat
+   hover, jadi petunjuknya cukup diberikan saat itu. */
+.tilt-scene:hover .tilt-body {
     will-change: transform;
 }
 
@@ -457,6 +469,23 @@
     }
 }
 
+/* Bola cahaya latar.
+
+   Pengganti pola `bg-<warna> blur-3xl` untuk ornamen yang IKUT BERGERAK
+   mengikuti gulir (`v-parallax`). `blur-3xl` pada div masif memaksa browser
+   menggambar ulang lingkaran itu lalu mengaburkannya setiap kali posisinya
+   berubah — mahal, dan terjadi di setiap frame gulir. Radial gradient
+   menghasilkan pudaran yang serupa tapi cukup digambar satu kali, lalu
+   digeser murni oleh compositor.
+
+   Warnanya diatur lewat `--orb-color`, mis:
+   <div class="orb-glow" style="--orb-color: rgba(52,226,245,0.28)"> */
+.orb-glow {
+    background-image: radial-gradient(closest-side,
+            var(--orb-color, rgba(52, 226, 245, 0.28)),
+            transparent 72%);
+}
+
 /* Kisi perspektif ala cyberpunk — dipakai sebagai lantai section. */
 .cyber-grid {
     background-image:
@@ -524,6 +553,29 @@
         background: var(--panel-lite-bg);
         backdrop-filter: blur(26px) saturate(160%);
         -webkit-backdrop-filter: blur(26px) saturate(160%);
+    }
+
+    /* Selama sebuah section sedang dianimasikan masuk (`v-reveal` memasang
+       kelas ini, lihat directives/reveal.js), efek kaca dimatikan sementara.
+
+       Menganimasikan opacity/transform pada elemen yang memuat panel
+       ber-backdrop-filter memaksa browser menyaring ulang latar seluruh subtree
+       di setiap frame — jeda inilah yang terasa "mengganjal" tepat saat section
+       Keunggulan dan Berita muncul. Latar solid yang dipakai di sini sama
+       persis dengan yang sudah dipakai perangkat sentuh, jadi perbedaannya
+       nyaris tak terlihat, dan efek kacanya kembali begitu animasi selesai. */
+    .reveal-running .holo-panel,
+    .reveal-running.holo-panel {
+        background: var(--panel-bg-solid);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .reveal-running .holo-panel-lite,
+    .reveal-running.holo-panel-lite {
+        background: var(--panel-lite-bg-solid);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 }
 
@@ -697,6 +749,10 @@
 
 .stage-body {
     transform-style: preserve-3d;
+}
+
+/* Sama seperti `.tilt-body`: promosi lapisan hanya saat dibutuhkan. */
+.stage-3d:hover .stage-body {
     will-change: transform;
 }
 

@@ -365,8 +365,8 @@ const goToBlock = (id) => {
 
             <!-- ======================== AGENDA LAINNYA ======================== -->
             <section v-if="props.related.length" class="relative overflow-hidden pb-28">
-                <div v-parallax="{ y: 100, speed: -0.9 }"
-                    class="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-volt-500/15 blur-3xl">
+                <div v-parallax="{ y: 100, speed: -0.9 }" style="--orb-color: rgba(139, 77, 255, 0.22)"
+                    class="orb-glow pointer-events-none absolute -right-24 top-0 h-72 w-72">
                 </div>
 
                 <div class="container-page relative">

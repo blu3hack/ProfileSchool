@@ -33,42 +33,85 @@ const activeHash = ref(props.active || props.links[0]?.hash || '');
 /** 0 … 1 — mengisi garis progres tipis di dasar navbar. */
 const progress = ref(0);
 
-/** Perhitungan sesungguhnya — hanya dijalankan sekali per frame. */
+/**
+ * Tinggi maksimum gulir, di-cache.
+ *
+ * `scrollHeight` dan `innerHeight` adalah pembacaan layout: memanggilnya di
+ * tengah gulir memaksa browser menghitung ulang tata letak (forced synchronous
+ * layout) — dulu terjadi di SETIAP frame. Nilainya hanya berubah saat ukuran
+ * jendela atau tinggi dokumen berubah, jadi cukup dihitung di saat-saat itu.
+ */
+let maxScroll = 0;
+
+const measureBounds = () => {
+    maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+};
+
+/** Perhitungan per frame — kini murni membaca `scrollY`, tanpa menyentuh layout. */
 const measure = () => {
     scrolled.value = window.scrollY > 40;
+    progress.value = maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll) : 0;
+};
 
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    progress.value = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+/**
+ * Scroll-spy lewat IntersectionObserver.
+ *
+ * Sebelumnya tiap frame menjalankan `document.querySelector` untuk tiap menu
+ * lalu `getBoundingClientRect()` pada tiap section — tujuh pencarian DOM dan
+ * tujuh pembacaan layout, 60 kali per detik selama pengguna menggulir. Kini
+ * browser yang mengabarkan section mana yang memotong garis 35% viewport, dan
+ * pekerjaan itu tidak lagi membebani main thread.
+ */
+let observer = null;
+/** Urutan section mengikuti menu — dipakai memilih yang teratas bila beberapa terlihat. */
+let observedSections = [];
+const visibleSections = new Set();
 
-    // Halaman dengan sorotan tetap tidak perlu scroll-spy.
+const syncActiveHash = () => {
+    const current = observedSections.find((section) => visibleSections.has(section.el));
+
+    if (current) {
+        activeHash.value = current.hash;
+    }
+};
+
+const startSpy = () => {
+    // Halaman dengan sorotan tetap (mis. /berita) tidak punya section — lewati.
     if (props.active) {
         return;
     }
 
-    // Tandai section yang sedang berada di sepertiga atas viewport.
-    const marker = window.innerHeight * 0.35;
+    observedSections = props.links
+        .map((link) => ({ hash: link.hash, el: document.querySelector(link.hash) }))
+        .filter((section) => section.el);
 
-    for (const link of props.links) {
-        const section = document.querySelector(link.hash);
-
-        if (!section) {
-            continue;
-        }
-
-        const { top, bottom } = section.getBoundingClientRect();
-
-        if (top <= marker && bottom > marker) {
-            activeHash.value = link.hash;
-            break;
-        }
+    if (!observedSections.length) {
+        return;
     }
+
+    observer = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    visibleSections.add(entry.target);
+                } else {
+                    visibleSections.delete(entry.target);
+                }
+            }
+
+            syncActiveHash();
+        },
+        // Viewport dipersempit jadi satu garis tipis di ketinggian 35%.
+        // Section yang memotong garis itulah yang sedang dibaca pengunjung.
+        { rootMargin: '-35% 0px -65% 0px' },
+    );
+
+    observedSections.forEach((section) => observer.observe(section.el));
 };
 
 /**
- * Event scroll bisa terpicu berkali-kali per frame (apalagi dengan Lenis).
- * `measure()` membaca layout (scrollHeight, getBoundingClientRect) sehingga
- * memanggilnya tiap event memicu layout-thrash. rAF menjamin maksimal satu
- * kali per frame — sinkron dengan paint, tanpa membebani scroll.
+ * Event scroll bisa terpicu berkali-kali per frame (apalagi dengan Lenis),
+ * jadi rAF menjamin maksimal satu kali per frame — sinkron dengan paint.
  */
 let scrollTick = false;
 
@@ -88,6 +131,9 @@ const closeMenu = () => (menuOpen.value = false);
 
 /** Tutup menu saat layar melebar ke ukuran desktop (menu inline sudah tampil). */
 const onResize = () => {
+    measureBounds();
+    measure();
+
     if (window.innerWidth >= 1024) {
         closeMenu();
     }
@@ -100,14 +146,31 @@ const onKeydown = (event) => {
     }
 };
 
+/**
+ * Tinggi dokumen masih tumbuh setelah mount (gambar lazy selesai dimuat,
+ * carousel selesai menata slide). Pengamat ini menjaga `maxScroll` tetap benar
+ * tanpa perlu mengukurnya lagi di tengah gulir.
+ */
+let bodyObserver = null;
+
 onMounted(() => {
-    onScroll();
+    measureBounds();
+    measure();
+    startSpy();
+
+    bodyObserver = new ResizeObserver(measureBounds);
+    bodyObserver.observe(document.body);
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     window.addEventListener('keydown', onKeydown);
 });
 
 onBeforeUnmount(() => {
+    observer?.disconnect();
+    bodyObserver?.disconnect();
+    visibleSections.clear();
+
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
     window.removeEventListener('keydown', onKeydown);

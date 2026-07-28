@@ -91,8 +91,8 @@ const resetFilter = () => {
                     <div class="cyber-grid absolute inset-0 opacity-40"></div>
                     <div class="scanlines absolute inset-0 opacity-50"></div>
                 </div>
-                <div v-parallax="{ y: 120, speed: 1.1 }"
-                    class="pointer-events-none absolute -left-32 top-10 -z-10 h-80 w-80 rounded-full bg-aqua-500/20 blur-3xl">
+                <div v-parallax="{ y: 120, speed: 1.1 }" style="--orb-color: rgba(15, 195, 221, 0.28)"
+                    class="orb-glow pointer-events-none absolute -left-32 top-10 -z-10 h-80 w-80">
                 </div>
                 <div v-parallax="{ y: 100, speed: -0.8, rotate: 18 }"
                     class="pointer-events-none absolute -right-24 top-28 -z-10 h-64 w-64 rotate-[22.5deg] rounded-[4rem] border border-plasma-400/30">

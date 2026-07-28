@@ -16,6 +16,19 @@
         @endisset
 
         @vite(['resources/js/app.js'])
+
+        {{-- Berkas halaman yang sedang dibuka. Tanpa ini, browser baru
+             menemukannya setelah bundel utama selesai dijalankan — satu
+             perjalanan bolak-balik penuh sebelum apa pun bisa dirender.
+             Lihat App\Support\PageAssets. --}}
+        @php($pageAssets = \App\Support\PageAssets::preloads($page['component'] ?? null))
+        @foreach ($pageAssets['css'] as $href)
+            <link rel="stylesheet" href="{{ $href }}">
+        @endforeach
+        @foreach ($pageAssets['js'] as $src)
+            <link rel="modulepreload" href="{{ $src }}">
+        @endforeach
+
         @inertiaHead
 
         {{-- Warna aksen tema pilihan admin (menu "Tema Website").

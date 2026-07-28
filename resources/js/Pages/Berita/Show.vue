@@ -268,8 +268,8 @@ const goToBlock = (id) => {
 
             <!-- ======================= BERITA TERKAIT ======================= -->
             <section v-if="props.related.length" class="relative overflow-hidden pb-28">
-                <div v-parallax="{ y: 100, speed: -0.9 }"
-                    class="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-plasma-500/15 blur-3xl">
+                <div v-parallax="{ y: 100, speed: -0.9 }" style="--orb-color: rgba(233, 48, 177, 0.22)"
+                    class="orb-glow pointer-events-none absolute -right-24 top-0 h-72 w-72">
                 </div>
 
                 <div class="container-page relative">
