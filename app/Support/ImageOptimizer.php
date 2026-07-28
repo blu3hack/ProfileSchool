@@ -50,19 +50,41 @@ class ImageOptimizer
     public static function shrinkInPlace(string $path): bool
     {
         $type = self::typeOf($path);
+        $temporary = $type === null ? false : tempnam(sys_get_temp_dir(), 'img');
 
-        if ($type === null) {
+        if ($type === null || $temporary === false) {
             return false;
         }
 
-        return self::process($path, fn (GdImage $image) => match ($type) {
-            IMAGETYPE_JPEG => imagejpeg($image, $path, self::QUALITY),
-            IMAGETYPE_PNG => imagepng($image, $path, 8),
-            IMAGETYPE_WEBP => imagewebp($image, $path, self::QUALITY),
-        });
+        try {
+            $ok = self::process($path, fn (GdImage $image) => match ($type) {
+                IMAGETYPE_JPEG => imagejpeg($image, $temporary, self::QUALITY),
+                IMAGETYPE_PNG => imagepng($image, $temporary, 8),
+                IMAGETYPE_WEBP => imagewebp($image, $temporary, self::QUALITY),
+            });
+
+            clearstatcache(true, $temporary);
+
+            // Encoder PNG milik GD kerap menghasilkan berkas lebih besar dari
+            // aslinya (logo situs sempat 528 KB -> 599 KB). Menulisnya balik
+            // justru memperlambat halaman, jadi hasil yang tidak lebih kecil
+            // dibuang dan berkas asli dibiarkan utuh.
+            if (! $ok || filesize($temporary) >= filesize($path)) {
+                return false;
+            }
+
+            return copy($temporary, $path);
+        } finally {
+            @unlink($temporary);
+        }
     }
 
-    /** Muat gambar, siapkan, serahkan ke penulis, lalu bebaskan memorinya. */
+    /**
+     * Muat gambar, siapkan, lalu serahkan ke penulis.
+     *
+     * Tidak ada imagedestroy(): sejak PHP 8 GD memakai objek GdImage yang
+     * dibebaskan sendiri oleh GC begitu tak ada lagi yang merujuknya.
+     */
     private static function process(string $source, callable $write): bool
     {
         $type = self::typeOf($source);
@@ -81,13 +103,7 @@ class ImageOptimizer
             return false;
         }
 
-        // prepare() mengambil alih kepemilikan $image dan membebaskan setiap
-        // hasil antara, sehingga di sini cukup satu imagedestroy() saja.
-        $prepared = self::prepare($image, $source, $type);
-        $ok = (bool) $write($prepared);
-        imagedestroy($prepared);
-
-        return $ok;
+        return (bool) $write(self::prepare($image, $source, $type));
     }
 
     private static function prepare(GdImage $image, string $source, int $type): GdImage
@@ -95,26 +111,16 @@ class ImageOptimizer
         // GD membuang metadata EXIF saat menulis ulang. Tanpa penerapan
         // orientasinya lebih dulu, foto potret dari ponsel jadi miring.
         if ($type === IMAGETYPE_JPEG) {
-            $image = self::replace($image, self::orient($image, $source));
+            $image = self::orient($image, $source);
         }
 
-        $image = self::replace($image, self::scale($image));
+        $image = self::scale($image);
 
         // Jaga transparansi PNG/WebP saat ditulis ulang.
         imagealphablending($image, false);
         imagesavealpha($image, true);
 
         return $image;
-    }
-
-    /** Bebaskan gambar lama bila langkah sebelumnya menghasilkan salinan baru. */
-    private static function replace(GdImage $old, GdImage $new): GdImage
-    {
-        if ($new !== $old) {
-            imagedestroy($old);
-        }
-
-        return $new;
     }
 
     private static function scale(GdImage $image): GdImage

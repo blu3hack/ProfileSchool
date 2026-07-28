@@ -53,16 +53,19 @@ class OptimizeStoredImages extends Command
                 continue;
             }
 
-            if (! ImageOptimizer::shrinkInPlace($path)) {
-                $after += $sizeBefore;
-                $rows[] = [$file, $this->format($sizeBefore), 'dilewati', 'format tidak didukung'];
-
-                continue;
-            }
+            ImageOptimizer::shrinkInPlace($path);
 
             clearstatcache(true, $path);
             $sizeAfter = (int) filesize($path);
             $after += $sizeAfter;
+
+            // Berkas dibiarkan utuh bila formatnya tak didukung atau hasil
+            // pengecilannya ternyata tidak lebih kecil.
+            if ($sizeAfter === $sizeBefore) {
+                $rows[] = [$file, $this->format($sizeBefore), 'dilewati', 'tak ada penghematan'];
+
+                continue;
+            }
 
             // Jaga kolom `size` tetap cocok dengan berkas di disk.
             Media::where('path', $file)->update(['size' => $sizeAfter]);
@@ -71,7 +74,7 @@ class OptimizeStoredImages extends Command
                 $file,
                 $this->format($sizeBefore),
                 $this->format($sizeAfter),
-                $sizeBefore > 0 ? '-'.round(($sizeBefore - $sizeAfter) / $sizeBefore * 100).'%' : '',
+                '-'.round(($sizeBefore - $sizeAfter) / $sizeBefore * 100).'%',
             ];
         }
 

@@ -98,6 +98,21 @@ class ImageOptimizationTest extends TestCase
         $this->assertSame(Storage::disk('public')->size($path), $media->fresh()->size);
     }
 
+    public function test_backfill_tidak_pernah_membuat_berkas_lebih_besar(): void
+    {
+        Storage::fake('public');
+
+        // Encoder PNG milik GD bisa kalah efisien dari berkas aslinya; hasil
+        // yang lebih besar harus dibuang, bukan ditulis balik.
+        $path = 'uploads/2026/07/logo.png';
+        Storage::disk('public')->put($path, UploadedFile::fake()->image('logo.png', 600, 400)->getContent());
+        $before = Storage::disk('public')->size($path);
+
+        $this->artisan('images:optimize')->assertSuccessful();
+
+        $this->assertLessThanOrEqual($before, Storage::disk('public')->size($path));
+    }
+
     public function test_dry_run_tidak_mengubah_berkas(): void
     {
         Storage::fake('public');
