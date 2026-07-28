@@ -7,6 +7,7 @@ use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,6 +34,7 @@ class ResourceController extends Controller
                 'icon' => $config['icon'],
                 'description' => $config['description'],
                 'columns' => $config['columns'],
+                'columnLabels' => $config['column_labels'] ?? [],
             ],
             'fields' => $this->fields($config),
             'items' => $model::query()->ordered()->get()->map(fn (Model $item) => $this->present($item, $config))->all(),
@@ -58,7 +60,7 @@ class ResourceController extends Controller
         $model = $config['model'];
 
         $item = $model::findOrFail($id);
-        $item->update($this->validated($request, $config));
+        $item->update($this->validated($request, $config, $id));
 
         return back()->with('success', $config['singular'].' berhasil diperbarui.');
     }
@@ -137,12 +139,26 @@ class ResourceController extends Controller
         ], $config['fields']);
     }
 
-    protected function validated(Request $request, array $config): array
+    /** @param  int|null  $id  Baris yang sedang diubah — null saat menambah. */
+    protected function validated(Request $request, array $config, ?int $id = null): array
     {
         $rules = ['is_active' => ['boolean']];
 
         foreach ($config['fields'] as $field) {
+            // Bakukan bentuk input lebih dulu supaya yang divalidasi (dan
+            // dicek keunikannya) sama persis dengan yang nanti tersimpan.
+            if (isset($field['prepare'])) {
+                $request->merge([$field['name'] => $field['prepare']($request->input($field['name']))]);
+            }
+
             $rules[$field['name']] = $field['rules'];
+
+            // Aturan unik dirakit di sini, bukan di config, karena butuh nama
+            // tabel + id baris yang sedang diubah — dan config harus bebas
+            // closure agar `config:cache` tetap jalan.
+            if ($field['unique'] ?? false) {
+                $rules[$field['name']][] = Rule::unique((new $config['model'])->getTable(), $field['name'])->ignore($id);
+            }
 
             // Setiap elemen daftar tag harus berupa teks pendek. `nullable`
             // karena baris kosong dari form sampai di sini sebagai null.

@@ -76,7 +76,7 @@ const submit = () => {
 };
 
 const destroy = (item) => {
-    const name = item.title ?? item.label ?? item.value ?? 'item ini';
+    const name = item.title ?? item.label ?? item.slug ?? item.value ?? 'item ini';
 
     if (!window.confirm(`Hapus "${name}"? Tindakan ini tidak bisa dibatalkan.`)) {
         return;
@@ -93,8 +93,13 @@ const toggle = (item) => {
     router.patch(`${base.value}/${item.id}/tampil`, {}, { preserveScroll: true });
 };
 
-/** Judul kolom tabel diambil dari label field yang sesuai. */
-const columnLabel = (name) => props.fields.find((field) => field.name === name)?.label ?? name;
+/**
+ * Judul kolom tabel diambil dari label field yang sesuai. Kolom yang bukan
+ * field (mis. penghitung kunjungan) mengambil judulnya dari meta.columnLabels.
+ */
+const columnLabel = (name) => props.fields.find((field) => field.name === name)?.label
+    ?? props.meta.columnLabels?.[name]
+    ?? name;
 
 const imageFields = computed(() => props.fields.filter((field) => field.type === 'image'));
 </script>

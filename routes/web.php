@@ -14,6 +14,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\Opsi2Controller;
 use App\Http\Controllers\Opsi3Controller;
+use App\Http\Controllers\ShortlinkController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -112,3 +113,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::patch('/{id}/tampil', [ResourceController::class, 'toggle'])->name('toggle');
     });
 });
+
+// ============================= TAUTAN PENDEK ============================
+// WAJIB terdaftar paling akhir: rute ini menangkap sisa alamat satu ruas
+// yang tidak cocok dengan rute mana pun, mis. /sanggar → Google Form.
+//
+// Daftar tautannya dikelola admin lewat menu "Tautan Pendek". Slug yang
+// bentrok dengan rute di atas ditolak saat disimpan (lihat aturan `not_in`
+// pada config/admin_resources.php) karena rute di atas selalu menang.
+
+Route::get('/{slug}', ShortlinkController::class)
+    ->where('slug', '[A-Za-z0-9][A-Za-z0-9._-]*')
+    ->name('shortlink');

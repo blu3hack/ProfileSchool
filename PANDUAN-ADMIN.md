@@ -48,10 +48,21 @@ kali percobaan gagal, login dikunci sementara.
 | **Kontak** | Baris kontak di footer |
 | **Media Sosial** | Tautan Instagram, YouTube, dst. |
 | **Menu Navigasi** | Item menu navbar & footer |
+| **Tautan Pendek** | Alamat singkat `smpialazka.com/<slug>` yang meneruskan ke Google Form, Drive, Zoom, dsb. |
 | **Profil Saya** | Nama, email, dan kata sandi akun admin |
 
 Setiap koleksi mendukung **urutan tampil** (tombol ↑ ↓) dan **sakelar
 tampil/sembunyi** — menyembunyikan item tidak menghapus datanya.
+
+### Tautan Pendek
+
+Menggantikan plugin **Redirection** dari situs WordPress lama; 48 tautan lama
+sudah diimpor dan hidup kembali. Slug ditulis **tanpa garis miring dan huruf
+kecil** (`sanggar`, bukan `/Sanggar/`) — kolom **Dibuka** menunjukkan berapa
+kali tautan itu diklik, berguna untuk membersihkan tautan yang sudah mati.
+
+Slug yang sama dengan halaman asli situs (`berita`, `event`, `galeri`,
+`login`, `admin`, …) ditolak, karena halaman aslinya selalu menang.
 
 ## 4. Mengunggah Gambar
 

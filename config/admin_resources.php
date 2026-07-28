@@ -7,6 +7,7 @@ use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\NavLink;
 use App\Models\Pillar;
+use App\Models\Shortlink;
 use App\Models\SocialLink;
 use App\Models\Stat;
 
@@ -19,6 +20,15 @@ use App\Models\Stat;
  * tidak butuh controller atau halaman baru.
  *
  * type field: text | textarea | number | select | tags | image | boolean
+ *
+ * Kunci field opsional:
+ * - `unique`  → nilainya harus unik di tabelnya (baris yang sedang diubah
+ *               otomatis dikecualikan)
+ * - `prepare` → callable [Kelas::class, 'metode'] yang membakukan input
+ *               sebelum divalidasi
+ *
+ * Isi berkas ini harus bisa di-`var_export` — jangan pakai closure, karena
+ * `artisan config:cache` pada saat deploy akan gagal.
  */
 $accents = [
     ['value' => 'mint', 'label' => 'Mint / Aqua'],
@@ -177,6 +187,50 @@ return [
         'fields' => [
             ['name' => 'label', 'label' => 'Teks Menu', 'type' => 'text', 'rules' => ['required', 'string', 'max:60']],
             ['name' => 'hash', 'label' => 'Target', 'type' => 'text', 'rules' => ['required', 'string', 'max:60'], 'default' => '#beranda', 'hint' => 'Contoh: #beranda, #berita, #prestasi'],
+        ],
+    ],
+
+    'shortlinks' => [
+        'label' => 'Tautan Pendek',
+        'singular' => 'Tautan Pendek',
+        'icon' => '🔗',
+        'description' => 'Alamat singkat smpialazka.com/<slug> yang meneruskan ke Google Form, Drive, Zoom, dan sejenisnya — pengganti plugin Redirection dari situs WordPress lama.',
+        'model' => Shortlink::class,
+        'columns' => ['slug', 'target', 'note', 'hits'],
+        // `hits` bukan field yang bisa diisi admin, jadi judul kolomnya
+        // tidak bisa diambil dari daftar field di bawah.
+        'column_labels' => ['hits' => 'Dibuka'],
+        'fields' => [
+            [
+                'name' => 'slug',
+                'label' => 'Alamat Pendek',
+                'type' => 'text',
+                'unique' => true,
+                'prepare' => [Shortlink::class, 'normalizeSlug'],
+                'rules' => [
+                    'required', 'string', 'max:100',
+                    'regex:/^[a-z0-9][a-z0-9._-]*$/',
+                    // Alamat milik halaman asli situs — rute halaman selalu
+                    // menang atas tautan pendek, jadi slug ini tidak akan pernah jalan.
+                    'not_in:admin,berita,event,galeri,login,logout,opsi2,opsi3,welcome,build,storage',
+                ],
+                'hint' => 'Tulis tanpa garis miring, huruf kecil. Contoh: sanggar → smpialazka.com/sanggar',
+            ],
+            [
+                'name' => 'target',
+                'label' => 'URL Tujuan',
+                'type' => 'textarea',
+                'rules' => ['required', 'string', 'max:2048', 'url'],
+                'default' => 'https://',
+                'hint' => 'Alamat lengkap beserta https://',
+            ],
+            [
+                'name' => 'note',
+                'label' => 'Catatan',
+                'type' => 'text',
+                'rules' => ['nullable', 'string', 'max:200'],
+                'hint' => 'Opsional — pengingat tautan ini dipakai untuk apa.',
+            ],
         ],
     ],
 ];
