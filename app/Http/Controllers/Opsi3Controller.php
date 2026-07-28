@@ -6,6 +6,8 @@ use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Support\EventRepository;
 use App\Support\PageContent;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * Landing page utama (Opsi 3) — konsep "Neo Cyber Madrasah".
@@ -17,6 +19,20 @@ use App\Support\PageContent;
 class Opsi3Controller extends Opsi2Controller
 {
     protected string $page = 'Opsi3';
+
+    /** Cache per-request: heroSlides() dipakai payload sekaligus preload. */
+    protected ?array $slides = null;
+
+    /**
+     * Foto hero adalah elemen LCP halaman ini. Tanpa petunjuk di <head>,
+     * browser baru menemukannya setelah bundel JS diunduh dan Vue selesai
+     * merender — jadi alamatnya dititipkan ke root view untuk di-preload.
+     */
+    public function __invoke(): Response
+    {
+        return Inertia::render($this->page, $this->payload())
+            ->withViewData(['heroPreload' => $this->heroSlides()[0]['src'] ?? null]);
+    }
 
     protected function payload(): array
     {
@@ -74,18 +90,24 @@ class Opsi3Controller extends Opsi2Controller
      */
     protected function heroSlides(): array
     {
+        if ($this->slides !== null) {
+            return $this->slides;
+        }
+
         $slides = HeroSlide::active()->ordered()->get()
             ->map(fn (HeroSlide $slide) => $slide->toCard())
             ->filter(fn (array $slide) => filled($slide['src']))
             ->values()
             ->all();
 
-        if ($slides) {
-            return $slides;
+        if (! $slides) {
+            $fallback = $this->heroImage();
+
+            $slides = $fallback['src']
+                ? [$fallback + ['eyebrow' => null, 'title' => null, 'description' => null]]
+                : [];
         }
 
-        $fallback = $this->heroImage();
-
-        return $fallback['src'] ? [$fallback + ['eyebrow' => null, 'title' => null, 'description' => null]] : [];
+        return $this->slides = $slides;
     }
 }

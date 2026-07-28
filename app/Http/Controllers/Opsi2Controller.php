@@ -13,16 +13,18 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Landing page alternatif (Opsi 2) — konsep "Islamic Futuristic".
+ * Induk landing page — mengumpulkan seluruh konten halaman dari database
+ * (dikelola lewat panel admin di /admin) sehingga komponen Vue tetap murni
+ * presentational.
  *
- * Semua konten halaman dikumpulkan di sini dan kini bersumber dari
- * database (dikelola lewat panel admin di /admin), sehingga komponen Vue
- * tetap murni presentational.
+ * Dulu kelas ini juga melayani /opsi2 sendiri, tapi halaman Vue-nya sudah
+ * dihapus; kini murni jadi induk bagi Opsi3Controller. `abstract` menjaga
+ * agar tidak sengaja dirutekan lagi dan merender komponen yang tak ada.
  */
-class Opsi2Controller extends Controller
+abstract class Opsi2Controller extends Controller
 {
-    /** Komponen Inertia yang dirender — dioverride oleh varian tema lain. */
-    protected string $page = 'Opsi2';
+    /** Komponen Inertia yang dirender — wajib diisi kelas turunan. */
+    protected string $page;
 
     public function __invoke(): Response
     {

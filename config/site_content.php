@@ -47,7 +47,7 @@ return [
         ['key' => 'hero_description', 'group' => 'hero', 'type' => 'textarea', 'label' => 'Paragraf Hero', 'default' => 'Sekolah Islam terpadu jenjang SD & SMP yang memadukan tahfidz terstruktur, sains modern, dan pembinaan akhlak — dalam lingkungan belajar yang teduh, aman, dan menyenangkan bagi ananda.'],
         ['key' => 'hero_cta_primary', 'group' => 'hero', 'type' => 'text', 'label' => 'Teks Tombol Utama', 'default' => 'Daftar Sekarang'],
         ['key' => 'hero_cta_secondary', 'group' => 'hero', 'type' => 'text', 'label' => 'Teks Tombol Kedua', 'default' => 'Jelajahi Sekolah'],
-        ['key' => 'hero_image', 'group' => 'hero', 'type' => 'image', 'label' => 'Foto Latar Beranda (Cadangan)', 'hint' => 'Hanya dipakai bila belum ada satu pun slide di menu "Slide Beranda". Disarankan lanskap minimal 1920px.', 'default' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=2400&q=80'],
+        ['key' => 'hero_image', 'group' => 'hero', 'type' => 'image', 'label' => 'Foto Latar Beranda (Cadangan)', 'hint' => 'Hanya dipakai bila belum ada satu pun slide di menu "Slide Beranda". Disarankan lanskap minimal 1920px.', 'default' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1920&q=72'],
         ['key' => 'hero_image_alt', 'group' => 'hero', 'type' => 'text', 'label' => 'Teks Alternatif Foto', 'default' => 'Gedung dan area belajar Alazka Islamic School'],
         ['key' => 'hero_image_credit', 'group' => 'hero', 'type' => 'text', 'label' => 'Kredit Foto', 'hint' => 'Kosongkan bila memakai foto sendiri.', 'default' => 'Foto placeholder — Unsplash'],
 

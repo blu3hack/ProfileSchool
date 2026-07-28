@@ -3,7 +3,6 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
-import { templateCompilerOptions } from '@tresjs/core';
 
 export default defineConfig({
     plugins: [
@@ -25,8 +24,6 @@ export default defineConfig({
                     base: null,
                     includeAbsolute: false,
                 },
-                // TresJS memakai custom renderer: tag <Tres*> bukan komponen Vue biasa.
-                ...templateCompilerOptions.template,
             },
         }),
         tailwindcss(),

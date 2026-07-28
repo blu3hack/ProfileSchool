@@ -12,11 +12,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\Opsi2Controller;
 use App\Http\Controllers\Opsi3Controller;
 use App\Http\Controllers\ShortlinkController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 // ============================ HALAMAN PUBLIK ============================
 
@@ -33,16 +31,6 @@ Route::get('/event/{slug}', [EventController::class, 'show'])->name('events.show
 
 // Galeri: seluruh foto profil sekolah — tujuan tombol "Lihat Semua" di beranda.
 Route::get('/galeri', [GalleryController::class, 'index'])->name('gallery.index');
-
-// Halaman sambutan bawaan, dipindah dari '/'.
-Route::get('/welcome', function () {
-    return Inertia::render('Welcome', [
-        'schoolName' => config('app.name', 'Alazka Islamic School'),
-    ]);
-})->name('welcome');
-
-// Landing page alternatif — konsep "Islamic Futuristic".
-Route::get('/opsi2', Opsi2Controller::class)->name('opsi2');
 
 // Alias lama untuk landing utama.
 Route::get('/opsi3', Opsi3Controller::class)->name('opsi3');

@@ -8,6 +8,13 @@
 
         <link rel="icon" href="/favicon.ico" sizes="any">
 
+        {{-- Foto hero = elemen LCP beranda. Diletakkan sebelum @vite supaya
+             unduhannya berjalan bersamaan dengan bundel JS, bukan menunggu
+             Vue selesai merender <img>-nya. --}}
+        @isset($heroPreload)
+            <link rel="preload" as="image" href="{{ $heroPreload }}" fetchpriority="high">
+        @endisset
+
         @vite(['resources/js/app.js'])
         @inertiaHead
 
