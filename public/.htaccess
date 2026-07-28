@@ -1,3 +1,16 @@
+# Aset build Vite memakai nama ber-hash yang ikut berganti tiap kali isinya
+# berubah, jadi aman disimpan browser selamanya. Gambar unggahan bisa
+# tertimpa dengan nama sama, jadi cukup sebulan.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    <FilesMatch "\.(jpe?g|png|webp|avif|gif|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -49,20 +51,54 @@ class MediaController extends Controller
         $file = $request->file('file');
 
         $name = Str::limit(Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)), 60, '');
-        $filename = ($name ?: 'gambar').'-'.Str::random(6).'.'.$file->getClientOriginalExtension();
+        $base = 'uploads/'.now()->format('Y/m').'/'.($name ?: 'gambar').'-'.Str::random(6);
 
-        $path = $file->storeAs('uploads/'.now()->format('Y/m'), $filename, 'public');
+        [$path, $mime, $size] = $this->keep($file, $base);
 
         $media = Media::create([
             'name' => $file->getClientOriginalName(),
             'path' => $path,
-            'mime' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
+            'mime' => $mime,
+            'size' => $size,
             'alt' => $request->string('alt')->toString() ?: null,
             'user_id' => $request->user()->id,
         ]);
 
         return response()->json($this->present($media), 201);
+    }
+
+    /**
+     * Simpan berkas, dikecilkan ke WebP bila memungkinkan.
+     *
+     * Format yang tak bisa diproses GD (mis. GIF beranimasi) tetap disimpan
+     * apa adanya — lebih baik gambar besar daripada gambar rusak.
+     *
+     * @return array{0: string, 1: string, 2: int} path, mime, dan ukuran akhir
+     */
+    private function keep(UploadedFile $file, string $base): array
+    {
+        $temporary = tempnam(sys_get_temp_dir(), 'img');
+
+        try {
+            if ($temporary && ImageOptimizer::toWebp($file->getRealPath(), $temporary)) {
+                $path = $base.'.webp';
+                Storage::disk('public')->put($path, file_get_contents($temporary));
+
+                return [$path, 'image/webp', (int) filesize($temporary)];
+            }
+        } finally {
+            if ($temporary) {
+                @unlink($temporary);
+            }
+        }
+
+        $path = $file->storeAs(
+            dirname($base),
+            basename($base).'.'.$file->getClientOriginalExtension(),
+            'public',
+        );
+
+        return [$path, $file->getClientMimeType(), (int) $file->getSize()];
     }
 
     /** Daftar media untuk pemilih gambar (dipanggil lewat XHR). */
