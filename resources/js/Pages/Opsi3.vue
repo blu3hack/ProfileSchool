@@ -228,7 +228,8 @@ onBeforeUnmount(() => ctx?.revert());
 </script>
 
 <template>
-    <Head title="Beranda — Opsi 3" />
+    <!-- Tanpa `title`: tab beranda cukup menampilkan nama sekolah saja. -->
+    <Head />
 
     <!-- `data-theme` inilah sakelar visual halaman: CSS menimpa variabel warna
          berdasarkan nilainya, jadi seluruh utilitas Tailwind ikut berganti. -->

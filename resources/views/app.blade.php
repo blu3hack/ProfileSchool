@@ -4,7 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Alazka Profile') }}</title>
+        <title inertia>{{ config('app.name', 'SMPI Alazka Surabaya') }}</title>
+
+        <link rel="icon" href="/favicon.ico" sizes="any">
 
         @vite(['resources/js/app.js'])
         @inertiaHead

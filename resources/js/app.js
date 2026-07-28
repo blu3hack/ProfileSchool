@@ -7,7 +7,7 @@ import { createSmoothScroll, resetScroll } from './lib/smooth-scroll';
 import reveal from './directives/reveal';
 import parallax from './directives/parallax';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Alazka Profile';
+const appName = import.meta.env.VITE_APP_NAME || 'SMPI Alazka Surabaya';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
