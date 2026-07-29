@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Support\ImageOptimizer;
+use App\Support\ImageVariant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,12 @@ class MediaController extends Controller
             'alt' => $request->string('alt')->toString() ?: null,
             'user_id' => $request->user()->id,
         ]);
+
+        // Varian `srcset` dibuat SEKARANG, selagi admin memang sedang menunggu
+        // unggahan selesai — bukan nanti saat pengunjung membuka halaman.
+        // Beranda memuat ~30 gambar; membuat variannya saat render berarti
+        // puluhan operasi GD sinkron dalam satu request. Lihat ImageVariant.
+        ImageVariant::warm($path);
 
         return response()->json($this->present($media), 201);
     }

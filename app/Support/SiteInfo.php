@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\ContactInfo;
+use App\Models\CustomLink;
 use App\Models\NavLink;
 use App\Models\SocialLink;
 use Illuminate\Support\Facades\Schema;
@@ -31,6 +32,24 @@ class SiteInfo
             ->all());
 
         return $links ?: self::defaultNavLinks();
+    }
+
+    /**
+     * Menu tambahan bikinan admin (tabel `custom_links`).
+     *
+     * Sengaja dipisah dari `navLinks()`: jumlahnya bisa terus bertambah, jadi
+     * isinya tidak boleh ikut memenuhi baris navbar. Semuanya ditampung satu
+     * dropdown "Lainnya" + section kartu di atas footer.
+     *
+     * Di sini tidak ada nilai cadangan — situs memang sah tampil tanpa menu
+     * tambahan sama sekali, dan keduanya (dropdown & section) ikut hilang.
+     */
+    public static function extraLinks(): array
+    {
+        return self::fromTable('custom_links', fn () => CustomLink::active()->ordered()
+            ->get()
+            ->map(fn (CustomLink $link) => $link->toCard())
+            ->all());
     }
 
     public static function contacts(): array
@@ -80,7 +99,7 @@ class SiteInfo
     {
         return [
             ['icon' => '📍', 'label' => 'Alamat', 'value' => 'Jl. Pendidikan Islami No. 45, Cimahi Utara, Jawa Barat 40514', 'href' => null],
-            ['icon' => '📞', 'label' => 'Telepon', 'value' => '(022) 8765 4321', 'href' => 'tel:+622287654321'],
+            ['icon' => '📞', 'label' => 'Telepon', 'value' => '085 606 000 606', 'href' => 'tel:+6285606000606'],
             ['icon' => '✉️', 'label' => 'Email', 'value' => 'info@alazka.sch.id', 'href' => 'mailto:info@alazka.sch.id'],
             ['icon' => '🕐', 'label' => 'Jam Operasional', 'value' => 'Senin – Jumat, 07.00 – 16.00 WIB', 'href' => null],
         ];
@@ -92,7 +111,7 @@ class SiteInfo
             ['label' => 'Instagram', 'href' => '#'],
             ['label' => 'YouTube', 'href' => '#'],
             ['label' => 'Facebook', 'href' => '#'],
-            ['label' => 'WhatsApp', 'href' => '#'],
+            ['label' => 'WhatsApp', 'href' => 'https://wa.me/6285606000606'],
         ];
     }
 }

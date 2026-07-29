@@ -34,9 +34,19 @@ class PageContent
                 : ($field['default'] ?? null);
         }
 
+        // Logo dirender 40 px di navbar dan 48 px di footer — tidak pernah
+        // lebih besar. Mengirim berkas aslinya (PNG 528 KB) berarti setengah
+        // megabita per kunjungan untuk gambar seukuran kuku jari. 192 px sudah
+        // tajam sampai layar 4×; lihat App\Support\ImageVariant.
+        $logo = $content['nav_logo'] ?? null;
+
         // Field gambar dikirim sebagai URL siap pakai di <img src>.
         foreach (self::imageKeys() as $key) {
             $content[$key] = MediaUrl::resolve($content[$key] ?? null);
+        }
+
+        if (filled($logo)) {
+            $content['nav_logo'] = ImageVariant::url($logo, 192);
         }
 
         return $content;
@@ -63,7 +73,13 @@ class PageContent
                 'fields' => [],
             ];
 
-            $raw = $values[$field['key']] ?? $field['default'] ?? null;
+            // Sama seperti `all()`: baris yang sudah ada di database menang
+            // atas default, termasuk bila nilainya null/kosong. Tanpa ini
+            // field yang sengaja dikosongkan admin akan terisi default lagi
+            // setiap form dibuka — dan ikut tersimpan pada penyimpanan berikutnya.
+            $raw = array_key_exists($field['key'], $values)
+                ? $values[$field['key']]
+                : ($field['default'] ?? null);
 
             $result[$group]['fields'][] = [
                 'key' => $field['key'],

@@ -8,11 +8,14 @@ import NewsCard from '../../Components/Opsi3/NewsCard.vue';
 import { newsAccent } from '../../lib/news-accent';
 import { scrollToElement } from '../../lib/navigate';
 import { useTheme } from '../../lib/theme';
+import { WHATSAPP_URL } from '../../lib/contact';
 
 const props = defineProps({
     schoolName: { type: String, default: 'Alazka Islamic School' },
     navLinks: { type: Array, default: () => [] },
-    /** Teks halaman yang bisa diedit admin (dipakai footer). */
+    /** Menu tambahan bikinan admin — tampil di dropdown "Lainnya" pada navbar. */
+    extraLinks: { type: Array, default: () => [] },
+    /** Teks halaman yang bisa diedit admin (dipakai kotak PPDB & footer). */
     content: { type: Object, default: () => ({}) },
     article: { type: Object, required: true },
     related: { type: Array, default: () => [] },
@@ -25,6 +28,33 @@ const { theme } = useTheme();
 const replay = (options = {}) => ({ once: false, ...options });
 
 const accent = computed(() => newsAccent(props.article.accent));
+
+/**
+ * Kotak ajakan PPDB di kolom kanan — seluruh teksnya dikelola admin lewat
+ * grup "Kotak PPDB (Halaman Berita)". Kotak disembunyikan bila admin
+ * mengosongkan judul, deskripsi, dan teks tombol sekaligus.
+ */
+const ppdbBox = computed(() => ({
+    title: props.content?.news_ppdb_title ?? '',
+    description: props.content?.news_ppdb_description ?? '',
+    label: props.content?.news_ppdb_label ?? '',
+}));
+
+const showPpdbBox = computed(
+    () => Boolean(ppdbBox.value.title || ppdbBox.value.description || ppdbBox.value.label),
+);
+
+/**
+ * Tautan tombolnya boleh diisi sendiri; bila dikosongkan ia mengikuti tombol
+ * utama section PPDB di beranda, supaya nomor WhatsApp-nya cukup diubah sekali
+ * dari panel admin. Bila tautan PPDB juga kosong, jatuh ke WhatsApp cepat.
+ */
+const konsultasiHref = computed(
+    () => props.content?.news_ppdb_href
+        || props.content?.ppdb_primary_href
+        || props.content?.quick_whatsapp
+        || WHATSAPP_URL,
+);
 
 /** Tautan berbagi dibentuk di klien agar selalu memakai URL yang sedang dibuka. */
 const shareUrl = computed(() => (typeof window === 'undefined' ? '' : window.location.href));
@@ -69,7 +99,8 @@ const goToBlock = (id) => {
     <Head :title="props.article.title" />
 
     <div :data-theme="theme" class="void-bg min-h-screen overflow-x-clip font-sans text-slate-200">
-        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks" :content="props.content" active="#berita" />
+        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks" :extra-links="props.extraLinks"
+            :content="props.content" active="#berita" />
 
         <main class="relative z-10">
             <!-- ======================= HERO ARTIKEL ======================= -->
@@ -244,19 +275,20 @@ const goToBlock = (id) => {
                                         </ul>
                                     </nav>
 
-                                    <div class="holo-panel relative mt-6 overflow-hidden rounded-[1.75rem] p-6 lg:mt-0">
+                                    <div v-if="showPpdbBox"
+                                        class="holo-panel relative mt-6 overflow-hidden rounded-[1.75rem] p-6 lg:mt-0">
                                         <div class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-aqua-500/25 blur-3xl">
                                         </div>
-                                        <p class="relative font-display text-lg font-bold text-slate-50">
-                                            Tertarik bergabung?
+                                        <p v-if="ppdbBox.title" class="relative font-display text-lg font-bold text-slate-50">
+                                            {{ ppdbBox.title }}
                                         </p>
-                                        <p class="relative mt-3 text-sm leading-relaxed text-slate-300/80">
-                                            PPDB tahun ajaran 2026/2027 sedang dibuka dengan kuota terbatas dan
-                                            beasiswa prestasi.
+                                        <p v-if="ppdbBox.description" class="relative mt-3 text-sm leading-relaxed text-slate-300/80">
+                                            {{ ppdbBox.description }}
                                         </p>
-                                        <a href="https://wa.me/622287654321"
+                                        <a v-if="ppdbBox.label" :href="konsultasiHref" target="_blank"
+                                            rel="noopener noreferrer"
                                             class="relative mt-6 block rounded-full bg-linear-to-r from-aqua-400 to-volt-400 px-6 py-3 text-center text-sm font-bold text-void-950 shadow-[0_0_28px_-8px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5">
-                                            Konsultasi PPDB
+                                            {{ ppdbBox.label }}
                                         </a>
                                     </div>
                                 </div>

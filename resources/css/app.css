@@ -123,10 +123,72 @@
         color: var(--color-sage-900);
     }
 
+    /* Halaman publik (satu-satunya yang membawa `data-theme` di <html>):
+       latar <body> ikut tema, bukan krem bawaan. Yang terlihat memang cuma
+       area overscroll — tapi di situlah "kebocoran" mode gelap paling kentara
+       saat halaman ditarik melewati ujungnya di ponsel. */
+    html[data-theme] body {
+        background-color: var(--color-void-950);
+        color: var(--color-slate-200);
+    }
+
     ::selection {
         background-color: var(--color-sage-200);
         color: var(--color-sage-900);
     }
+}
+
+/* ============================================================
+   Area ber-scroll di panel admin (sidebar, isi modal, pustaka
+   gambar, tabel yang melebar).
+
+   Yang membuat roda mouse & gesture touchpad bekerja BUKAN berkas ini,
+   melainkan tidak adanya pembajak event gulir global: smooth scroll (Lenis)
+   sengaja dimatikan di rute /admin — lihat resources/js/app.js. Di sini hanya
+   kenyamanannya yang diatur: gulir tidak menular ke halaman, momentum di iOS,
+   dan batang scrollbar tipis yang tetap terlihat sebagai penanda.
+   ============================================================ */
+.admin-scroll {
+    /* Begitu isinya habis, gulir berhenti di sini — tidak diteruskan ke
+       halaman di belakangnya (scroll chaining). */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+}
+
+/* WebKit/Blink: scrollbar selalu tampak, tapi ramping dan tak mencolok. */
+.admin-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.admin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: rgba(100, 116, 139, 0.45);
+}
+
+.admin-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(71, 85, 105, 0.7);
+}
+
+/* Varian untuk latar gelap (sidebar). */
+.admin-scroll-dark {
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.admin-scroll-dark::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.4);
+}
+
+.admin-scroll-dark::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(203, 213, 225, 0.65);
 }
 
 @layer utilities {
@@ -446,6 +508,25 @@
     transition: background-color 0.5s ease;
 }
 
+/* PERFORMA — lapisan ini DIAM, jangan dianimasikan lagi.
+ *
+ * Dulu ada `animation: nebula-drift 26s infinite alternate` di sini, dan itulah
+ * sumber lag terbesar di seluruh situs. Alasannya berantai:
+ *
+ *   1. Lapisan ini `position: fixed` selebar viewport dan berada di BELAKANG
+ *      seluruh konten.
+ *   2. Ada ~39 elemen `.holo-panel` di atasnya yang memakai `backdrop-filter`.
+ *   3. `backdrop-filter` menyaring ulang isinya SETIAP KALI latar di belakangnya
+ *      berubah.
+ *
+ * Karena animasinya berjalan selamanya, latar itu berubah di setiap frame —
+ * jadi browser menghitung ulang blur 22px untuk 39 panel, 60 kali per detik,
+ * TERUS-MENERUS, bahkan saat halaman diam tak digulir. Saat digulir, biaya itu
+ * ditambah lagi dengan blur ulang akibat konten yang bergerak.
+ *
+ * Geserannya sendiri cuma ±2% selama 26 detik — praktis tak terlihat. Dihapus,
+ * gradasi nebula-nya tetap ada, tapi panel kaca hanya menyaring ulang saat
+ * benar-benar ada yang bergerak. */
 .void-bg::before {
     content: '';
     position: fixed;
@@ -456,17 +537,6 @@
         radial-gradient(42rem 30rem at 8% 6%, var(--nebula-1), transparent 62%),
         radial-gradient(38rem 28rem at 92% 22%, var(--nebula-2), transparent 62%),
         radial-gradient(46rem 32rem at 50% 100%, var(--nebula-3), transparent 62%);
-    animation: nebula-drift 26s ease-in-out infinite alternate;
-}
-
-@keyframes nebula-drift {
-    from {
-        transform: translate3d(-2%, -1.5%, 0) scale(1);
-    }
-
-    to {
-        transform: translate3d(2%, 1.5%, 0) scale(1.08);
-    }
 }
 
 /* Bola cahaya latar.
@@ -496,24 +566,41 @@
     -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
 }
 
-/* Kisi yang "berlari" menjauh — ilusi lantai bergerak. */
+/* Kisi yang "berlari" menjauh — ilusi lantai bergerak.
+ *
+ * PERFORMA: dulu `background-position` yang dianimasikan. Sama seperti
+ * box-shadow, itu properti yang memaksa PAINT — seluruh kisi digambar ulang di
+ * main thread tiap frame, selamanya. Sekarang kisinya pindah ke elemen semu
+ * setinggi dua kali lipat yang digeser dengan `translate3d`; hasil rasternya
+ * cukup dibuat sekali lalu digeser compositor.
+ *
+ * `position` sengaja TIDAK disetel di sini — elemennya sudah `absolute` lewat
+ * utilitas Tailwind di markup, dan menimpanya akan merusak tata letak footer. */
 .cyber-floor {
+    overflow: hidden;
+    transform: perspective(28rem) rotateX(68deg);
+    transform-origin: center bottom;
+}
+
+.cyber-floor::before {
+    content: '';
+    position: absolute;
+    /* Tinggi 200% supaya masih menutupi bidang setelah digeser 4rem ke bawah. */
+    inset: -100% 0 0 0;
     background-image:
         linear-gradient(to right, var(--floor-line-a) 1px, transparent 1px),
         linear-gradient(to bottom, var(--floor-line-b) 1px, transparent 1px);
     background-size: 4rem 4rem;
-    transform: perspective(28rem) rotateX(68deg);
-    transform-origin: center bottom;
     animation: floor-run 6s linear infinite;
 }
 
 @keyframes floor-run {
     from {
-        background-position: 0 0;
+        transform: translate3d(0, 0, 0);
     }
 
     to {
-        background-position: 0 4rem;
+        transform: translate3d(0, 4rem, 0);
     }
 }
 
@@ -541,18 +628,29 @@
     transition: background 0.5s ease, border-color 0.5s ease;
 }
 
-/* Hanya di perangkat non-sentuh (mouse): aktifkan efek kaca penuh. */
+/* Hanya di perangkat non-sentuh (mouse): aktifkan efek kaca penuh.
+ *
+ * Radiusnya sengaja kecil. Biaya blur naik seiring radius, dan panel yang
+ * paling sering disaring ulang adalah navbar — ia `position: fixed`, jadi
+ * latarnya berganti di SETIAP frame gulir dan tidak ada cara menghindarinya
+ * selain membuat penyaringannya murah.
+ *
+ * `saturate()` juga dilepas: ia menambah satu lintasan filter penuh di atas
+ * area yang sama, sementara warna panel sudah datang dari gradasi
+ * `--panel-bg`. Kalau ingin kaca yang lebih "tebal" lagi, naikkan angkanya
+ * sedikit demi sedikit sambil melihat panel "Rendering → Frame rendering
+ * stats" di DevTools — jangan kembali ke 22px/26px. */
 @media (hover: hover) and (pointer: fine) {
     .holo-panel {
         background: var(--panel-bg);
-        backdrop-filter: blur(22px) saturate(150%);
-        -webkit-backdrop-filter: blur(22px) saturate(150%);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     }
 
     .holo-panel-lite {
         background: var(--panel-lite-bg);
-        backdrop-filter: blur(26px) saturate(160%);
-        -webkit-backdrop-filter: blur(26px) saturate(160%);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
     }
 
     /* Selama sebuah section sedang dianimasikan masuk (`v-reveal` memasang
@@ -769,19 +867,38 @@
     transform: translateZ(92px);
 }
 
-/* Denyut halus untuk indikator & node linimasa. */
-.pulse-node {
+/* Denyut halus untuk indikator & node linimasa.
+ *
+ * PERFORMA: dulu yang dianimasikan adalah `box-shadow`. Box-shadow bukan
+ * properti yang bisa diurus compositor — setiap frame browser harus MENGGAMBAR
+ * ULANG cincinnya di main thread, selamanya, dan setiap gambar ulang itu ikut
+ * membatalkan `backdrop-filter` panel di sekitarnya. Sekarang cincinnya jadi
+ * elemen semu dengan border tetap, dan yang berubah cuma `transform` +
+ * `opacity` — keduanya murni compositor, nol repaint. */
+.pulse-node::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid rgba(52, 226, 245, 0.45);
     animation: pulse-node 2.8s ease-in-out infinite;
+    pointer-events: none;
 }
 
 @keyframes pulse-node {
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(52, 226, 245, 0.45);
+    0% {
+        transform: scale(1);
+        opacity: 0.75;
     }
 
     60% {
-        box-shadow: 0 0 0 14px rgba(52, 226, 245, 0);
+        transform: scale(1.7);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1.7);
+        opacity: 0;
     }
 }
 

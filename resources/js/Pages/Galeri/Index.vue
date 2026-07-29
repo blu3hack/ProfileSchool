@@ -10,6 +10,8 @@ import { useTheme } from '../../lib/theme';
 const props = defineProps({
     schoolName: { type: String, default: 'Alazka Islamic School' },
     navLinks: { type: Array, default: () => [] },
+    /** Menu tambahan bikinan admin — tampil di dropdown "Lainnya" pada navbar. */
+    extraLinks: { type: Array, default: () => [] },
     /** Teks halaman yang bisa diedit admin (dipakai footer). */
     content: { type: Object, default: () => ({}) },
     /** Seluruh foto galeri aktif, terurut sesuai pengaturan admin. */
@@ -31,7 +33,8 @@ const openLightbox = (index) => (lightboxIndex.value = index);
     <Head title="Galeri Sekolah" />
 
     <div :data-theme="theme" class="void-bg min-h-screen overflow-x-clip font-sans text-slate-200">
-        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks" :content="props.content" active="#galeri" />
+        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks" :extra-links="props.extraLinks"
+            :content="props.content" active="#galeri" />
 
         <main class="relative z-10">
             <!-- =========================== HEADER =========================== -->
@@ -87,7 +90,9 @@ const openLightbox = (index) => (lightboxIndex.value = index);
                             v-reveal="replay({ from: 'up', delay: 0.05 * (index % 3) })"
                             class="group relative block w-full break-inside-avoid overflow-hidden rounded-[1.5rem] border border-white/10 bg-void-900 transition duration-300 hover:border-aqua-400/50 hover:shadow-[0_0_40px_-12px_rgba(52,226,245,0.7)]"
                             :aria-label="`Buka foto: ${image.title}`" @click="openLightbox(index)">
-                            <img :src="image.src" :alt="image.alt || image.title" loading="lazy"
+                            <img :src="image.src" :srcset="image.srcset"
+                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                                :alt="image.alt || image.title" loading="lazy" decoding="async"
                                 class="w-full object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100">
                             <div class="scanlines pointer-events-none absolute inset-0 opacity-25"></div>
                             <!-- Judul & aksi muncul dari bawah saat hover. -->

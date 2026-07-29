@@ -40,6 +40,7 @@ abstract class Opsi2Controller extends Controller
         return [
             'schoolName' => SiteInfo::name(),
             'navLinks' => SiteInfo::navLinks(),
+            'extraLinks' => SiteInfo::extraLinks(),
             'content' => PageContent::all(),
             'stats' => $this->stats(),
             'pillars' => $this->pillars(),

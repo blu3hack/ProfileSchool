@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ImageVariant;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -72,6 +73,7 @@ class News extends Model
             'author' => $this->author,
             'readTime' => $this->read_time,
             'image' => MediaUrl::resolve($this->image),
+            'srcset' => ImageVariant::srcset($this->image),
             'imageCaption' => $this->image_caption,
             'gallery' => collect($this->gallery ?? [])
                 ->map(fn ($item) => [

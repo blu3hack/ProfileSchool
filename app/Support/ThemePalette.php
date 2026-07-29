@@ -127,10 +127,20 @@ class ThemePalette
      * Selektor atribut sengaja digandakan (`[data-theme='dark'][data-theme='dark']`)
      * agar spesifisitasnya melampaui aturan di app.css, sehingga selalu menang
      * berapa pun urutan pemuatan stylesheet.
+     *
+     * HANYA warna yang benar-benar diubah admin yang dituliskan. Ramp turunan
+     * dihitung dengan mencampur ke putih/hitam murni, yang mencuci rona biru
+     * pada skala `--color-void-*`: menuliskannya untuk warna bawaan membuat
+     * permukaan kartu jadi abu-abu netral (#12141c, #dbe0e7) alih-alih
+     * biru-kehitaman/biru-lembut hasil penyetelan tangan di app.css — padahal
+     * admin belum menyentuh apa pun. Dengan disaring begini, nilai bawaan
+     * app.css dibiarkan utuh dan `<style>` inline-nya kosong sampai benar-benar
+     * ada yang dikustomisasi.
      */
     public static function css(): string
     {
         $palette = self::current();
+        $defaults = self::defaults();
         $blocks = [];
 
         foreach ($palette as $mode => $values) {
@@ -138,14 +148,24 @@ class ThemePalette
 
             // Aksen neon: aqua, volt, plasma, solar.
             foreach (array_keys(self::ACCENTS) as $accent) {
+                if ($values[$accent] === $defaults[$mode][$accent]) {
+                    continue;
+                }
+
                 foreach (self::ramp($mode, $values[$accent]) as $shade => $color) {
                     $lines[] = "  --color-{$accent}-{$shade}: {$color};";
                 }
             }
 
             // Latar utama + permukaan/garis turunannya (--color-void-*).
-            foreach (self::bgRamp($mode, $values[self::BACKGROUND]) as $shade => $color) {
-                $lines[] = "  --color-void-{$shade}: {$color};";
+            if ($values[self::BACKGROUND] !== $defaults[$mode][self::BACKGROUND]) {
+                foreach (self::bgRamp($mode, $values[self::BACKGROUND]) as $shade => $color) {
+                    $lines[] = "  --color-void-{$shade}: {$color};";
+                }
+            }
+
+            if ($lines === []) {
+                continue;
             }
 
             $selector = "[data-theme='{$mode}'][data-theme='{$mode}']";

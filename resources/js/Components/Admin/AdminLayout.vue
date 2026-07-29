@@ -57,10 +57,13 @@ const logout = () => router.post('/logout');
 
     <div class="min-h-screen bg-slate-100 text-slate-800">
         <!-- ============================ SIDEBAR ============================ -->
+        <!-- Kolom flex: kepala tetap terlihat, hanya daftar menu yang bergulir.
+             `data-lenis-prevent` = jaring pengaman bila suatu saat smooth
+             scroll ikut aktif di halaman ini (lihat app.js). -->
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto bg-slate-900 text-slate-300 transition-transform duration-300 lg:translate-x-0"
+            class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-slate-900 text-slate-300 transition-transform duration-300 lg:translate-x-0"
             :class="{ 'translate-x-0': sidebarOpen }">
-            <div class="flex items-center gap-3 px-6 py-6">
+            <div class="flex shrink-0 items-center gap-3 px-6 py-6">
                 <span
                     class="flex h-11 w-11 rotate-[22.5deg] items-center justify-center rounded-2xl bg-linear-to-br from-teal-400 via-sky-400 to-fuchsia-400 font-bold text-slate-900">
                     <span class="-rotate-[22.5deg]">A</span>
@@ -71,7 +74,7 @@ const logout = () => router.post('/logout');
                 </span>
             </div>
 
-            <nav class="px-4 pb-10">
+            <nav data-lenis-prevent class="admin-scroll admin-scroll-dark min-h-0 flex-1 overflow-y-auto px-4 pb-10">
                 <p class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Utama</p>
                 <Link v-for="item in mainMenu" :key="item.href" :href="item.href"
                     class="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition"

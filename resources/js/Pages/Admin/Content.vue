@@ -38,7 +38,8 @@ const errorFor = (key) => form.errors[`values.${key}`] ?? '';
             <div class="grid gap-6 lg:grid-cols-[16rem_1fr]">
                 <!-- Daftar section -->
                 <nav class="lg:sticky lg:top-24 lg:self-start">
-                    <ul class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+                    <ul data-lenis-prevent
+                        class="admin-scroll flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
                         <li v-for="group in props.groups" :key="group.key" class="shrink-0 lg:shrink">
                             <button type="button"
                                 class="w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition"

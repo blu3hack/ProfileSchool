@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Orderable;
+use App\Support\ImageVariant;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,7 @@ class HeroSlide extends Model
     {
         return [
             'src' => MediaUrl::resolve($this->image),
+            'srcset' => ImageVariant::srcset($this->image),
             'alt' => $this->alt ?: $this->title,
             'eyebrow' => $this->eyebrow,
             'title' => $this->title,

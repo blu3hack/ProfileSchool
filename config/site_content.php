@@ -20,11 +20,13 @@ return [
         'hero' => 'Beranda (Hero)',
         'keunggulan' => 'Section Keunggulan',
         'berita' => 'Section Berita',
+        'berita_ppdb' => 'Kotak PPDB (Halaman Berita)',
         'event' => 'Section Next Event',
         'kegiatan' => 'Section Kegiatan',
         'prestasi' => 'Section Prestasi',
         'galeri' => 'Section Galeri',
         'ppdb' => 'Section PPDB / Ajakan Daftar',
+        'menu_tambahan' => 'Section Menu Tambahan',
         'footer' => 'Footer & Kontak Cepat',
     ],
 
@@ -63,6 +65,12 @@ return [
         ['key' => 'news_description', 'group' => 'berita', 'type' => 'textarea', 'label' => 'Deskripsi Section', 'default' => 'Momen, capaian, dan pengumuman terkini dari lingkungan sekolah.'],
         ['key' => 'news_cta', 'group' => 'berita', 'type' => 'text', 'label' => 'Teks Tombol "Lihat Semua"', 'default' => 'Lihat Semua Berita'],
 
+        // ------------------------------- Kotak PPDB di halaman detail berita
+        ['key' => 'news_ppdb_title', 'group' => 'berita_ppdb', 'type' => 'text', 'label' => 'Judul Kotak', 'hint' => 'Kotak ajakan di kolom kanan halaman detail berita. Kosongkan judul, deskripsi, dan teks tombol sekaligus untuk menyembunyikan kotak ini.', 'default' => 'Tertarik bergabung?'],
+        ['key' => 'news_ppdb_description', 'group' => 'berita_ppdb', 'type' => 'textarea', 'label' => 'Deskripsi Kotak', 'default' => 'PPDB tahun ajaran 2026/2027 sedang dibuka dengan kuota terbatas dan beasiswa prestasi.'],
+        ['key' => 'news_ppdb_label', 'group' => 'berita_ppdb', 'type' => 'text', 'label' => 'Teks Tombol', 'hint' => 'Kosongkan untuk menampilkan kotak tanpa tombol.', 'default' => 'Konsultasi PPDB'],
+        ['key' => 'news_ppdb_href', 'group' => 'berita_ppdb', 'type' => 'url', 'label' => 'Tautan Tombol', 'hint' => 'Kosongkan untuk mengikuti "Tautan Tombol Utama" pada Section PPDB / Ajakan Daftar.', 'default' => null],
+
         // ------------------------------- Next Event
         ['key' => 'events_eyebrow', 'group' => 'event', 'type' => 'text', 'label' => 'Label Kecil', 'default' => 'Agenda Terdekat'],
         ['key' => 'events_title', 'group' => 'event', 'type' => 'text', 'label' => 'Judul Section', 'default' => 'Next Event'],
@@ -96,14 +104,23 @@ return [
         ['key' => 'ppdb_title_highlight', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Judul (gradasi neon)', 'default' => 'Terbaik untuk Ananda'],
         ['key' => 'ppdb_description', 'group' => 'ppdb', 'type' => 'textarea', 'label' => 'Deskripsi', 'default' => 'Pendaftaran gelombang II telah dibuka dengan kuota terbatas. Tersedia beasiswa prestasi akademik dan tahfidz bagi calon siswa terpilih.'],
         ['key' => 'ppdb_primary_label', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Teks Tombol Utama', 'default' => 'Daftar via WhatsApp'],
-        ['key' => 'ppdb_primary_href', 'group' => 'ppdb', 'type' => 'url', 'label' => 'Tautan Tombol Utama', 'default' => 'https://wa.me/622287654321'],
+        ['key' => 'ppdb_primary_href', 'group' => 'ppdb', 'type' => 'url', 'label' => 'Tautan Tombol Utama', 'hint' => 'Dipakai juga oleh tombol kotak PPDB di halaman detail berita, selama tautannya di grup "Kotak PPDB (Halaman Berita)" dibiarkan kosong.', 'default' => 'https://wa.me/6285606000606'],
         ['key' => 'ppdb_secondary_label', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Teks Tombol Kedua', 'default' => 'Konsultasi Dulu'],
+
+        // ------------------------------- Section Menu Tambahan
+        // Isinya sendiri (daftar menunya) dikelola di menu "Menu Tambahan";
+        // yang di bawah ini hanya teks pembungkus section-nya.
+        ['key' => 'extras_menu_label', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Teks Dropdown Navbar', 'hint' => 'Nama tombol dropdown penampung menu tambahan di navbar.', 'default' => 'Lainnya'],
+        ['key' => 'extras_eyebrow', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Label Kecil', 'default' => 'Akses Cepat'],
+        ['key' => 'extras_title', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Judul Section', 'default' => 'Menu &'],
+        ['key' => 'extras_title_highlight', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Judul (gradasi neon)', 'default' => 'Layanan Lainnya'],
+        ['key' => 'extras_description', 'group' => 'menu_tambahan', 'type' => 'textarea', 'label' => 'Deskripsi Section', 'default' => 'Tautan penting lain seputar layanan sekolah — formulir, dokumen, dan halaman yang sering dicari orang tua serta siswa.'],
 
         // ------------------------------- Footer
         ['key' => 'footer_description', 'group' => 'footer', 'type' => 'textarea', 'label' => 'Paragraf Footer', 'default' => "Mendidik generasi Qur'ani yang cerdas, berakhlak mulia, dan siap berkontribusi bagi umat serta bangsa — dengan pendekatan belajar yang hangat dan relevan bagi anak masa kini."],
         ['key' => 'footer_note', 'group' => 'footer', 'type' => 'text', 'label' => 'Catatan Bawah', 'default' => 'Dibangun dengan penuh amanah untuk pendidikan Indonesia.'],
-        ['key' => 'quick_whatsapp', 'group' => 'footer', 'type' => 'url', 'label' => 'Tautan WhatsApp', 'default' => 'https://wa.me/622287654321'],
-        ['key' => 'quick_phone', 'group' => 'footer', 'type' => 'text', 'label' => 'Nomor Telepon', 'hint' => 'Format tel:, mis. tel:+622287654321', 'default' => 'tel:+622287654321'],
+        ['key' => 'quick_whatsapp', 'group' => 'footer', 'type' => 'url', 'label' => 'Tautan WhatsApp', 'default' => 'https://wa.me/6285606000606'],
+        ['key' => 'quick_phone', 'group' => 'footer', 'type' => 'text', 'label' => 'Nomor Telepon', 'hint' => 'Format tel:, mis. tel:+6285606000606', 'default' => 'tel:+6285606000606'],
         ['key' => 'quick_email', 'group' => 'footer', 'type' => 'text', 'label' => 'Alamat Email', 'hint' => 'Format mailto:, mis. mailto:info@alazka.sch.id', 'default' => 'mailto:info@alazka.sch.id'],
         ['key' => 'map_embed', 'group' => 'footer', 'type' => 'url', 'label' => 'URL Peta (embed)', 'hint' => 'Di Google Maps: Bagikan → "Sematkan peta" → salin isi src (atau tempel seluruh kode <iframe>). JANGAN tempel link biasa dari address bar / tombol Bagikan → Salin tautan, karena akan ditolak (X-Frame-Options).', 'default' => 'https://www.openstreetmap.org/export/embed.html?bbox=107.5300%2C-6.8800%2C107.5600%2C-6.8600&layer=mapnik'],
     ],

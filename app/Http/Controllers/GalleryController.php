@@ -23,6 +23,7 @@ class GalleryController extends Controller
         return Inertia::render('Galeri/Index', [
             'schoolName' => SiteInfo::name(),
             'navLinks' => SiteInfo::navLinks(),
+            'extraLinks' => SiteInfo::extraLinks(),
             'content' => PageContent::all(),
             'contacts' => SiteInfo::contacts(),
             'socials' => SiteInfo::socials(),

@@ -115,13 +115,16 @@ const imageFields = computed(() => props.fields.filter((field) => field.type ===
             <span class="text-sm text-slate-500">{{ props.items.length }} item tersimpan</span>
         </div>
 
-        <!-- ============================== TABEL ============================== -->
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <!-- ============================== TABEL ==============================
+             `overflow-x-auto` (dulu `overflow-hidden`): di layar sempit kolom
+             yang melebihi lebar layar dulu terpotong tanpa bisa dijangkau.
+             Sudutnya tetap membulat karena kotak ini tetap memotong isinya. -->
+        <div data-lenis-prevent class="admin-scroll overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <div v-if="!props.items.length" class="px-5 py-12 text-center text-sm text-slate-500">
                 Belum ada data. Klik "Tambah {{ props.meta.singular }}" untuk membuat yang pertama.
             </div>
 
-            <table v-else class="w-full text-left text-sm">
+            <table v-else class="w-full min-w-3xl text-left text-sm">
                 <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                     <tr>
                         <th class="w-24 px-4 py-3">Urutan</th>
@@ -183,7 +186,8 @@ const imageFields = computed(() => props.fields.filter((field) => field.type ===
         </div>
 
         <!-- =============================== FORM =============================== -->
-        <div v-if="editing !== null" class="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:p-8">
+        <div v-if="editing !== null" data-lenis-prevent
+            class="admin-scroll fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:p-8">
             <div class="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
                 <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
                     <h2 class="font-bold text-slate-900">
@@ -193,7 +197,8 @@ const imageFields = computed(() => props.fields.filter((field) => field.type ===
                         @click="close">✕</button>
                 </div>
 
-                <form class="max-h-[70vh] space-y-6 overflow-y-auto px-6 py-6" @submit.prevent="submit">
+                <form data-lenis-prevent
+                    class="admin-scroll max-h-[70vh] space-y-6 overflow-y-auto px-6 py-6" @submit.prevent="submit">
                     <FormField v-for="field in props.fields" :key="field.name" v-model="form[field.name]" :field="field"
                         :error="form.errors[field.name]" />
 

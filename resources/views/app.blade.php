@@ -1,18 +1,67 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+{{-- Mode tampilan dipasang di <html>, bukan di div halaman: dengan begitu latar
+     <body>, warna scrollbar, dan elemen yang di-teleport ke body (lightbox
+     galeri) ikut berganti. Halaman admin sengaja tidak mendapat atribut ini —
+     lihat App\Support\ThemeMode::boot(). --}}
+@php($themeBoot = \App\Support\ThemeMode::boot($page['component'] ?? null))
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      @if ($themeBoot) data-theme="{{ $themeBoot['mode'] }}" @endif>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', 'SMPI Alazka Surabaya') }}</title>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
+        @if ($themeBoot)
+            {{-- Skrip sinkron & sedini mungkin: menetapkan mode final SEBELUM
+                 cat pertama, jadi tidak ada kedipan gelap→terang. Pilihan
+                 pengunjung menang, kecuali admin mengubah bawaan situs setelah
+                 pilihan itu dibuat (stamp server lebih baru). --}}
+            <script>
+                (function (boot) {
+                    var mode = boot.default;
+
+                    try {
+                        var saved = JSON.parse(window.localStorage.getItem(boot.storageKey) || 'null');
+
+                        if (saved && (saved.mode === 'dark' || saved.mode === 'light')
+                            && Number(saved.stamp) >= boot.stamp) {
+                            mode = saved.mode;
+                        }
+                    } catch (e) {
+                        // localStorage diblokir, atau berisi format lama ("dark"
+                        // polos tanpa stamp) — pakai bawaan dari panel admin.
+                    }
+
+                    if (mode === 'system') {
+                        mode = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                    }
+
+                    document.documentElement.dataset.theme = mode;
+                    window.__alazkaTheme = { mode: mode, default: boot.default, stamp: boot.stamp, storageKey: boot.storageKey };
+                })({!! Illuminate\Support\Js::from($themeBoot) !!});
+            </script>
+        @endif
+
+        {{-- Ikon tab browser: logo sekolah dari panel admin, dipersegikan
+             sekali oleh App\Support\Favicon. --}}
+        @php($favicon = \App\Support\Favicon::url())
+        @if ($favicon)
+            <link rel="icon" href="{{ $favicon }}">
+            <link rel="apple-touch-icon" href="{{ $favicon }}">
+        @else
+            <link rel="icon" href="/favicon.ico" sizes="any">
+        @endif
 
         {{-- Foto hero = elemen LCP beranda. Diletakkan sebelum @vite supaya
              unduhannya berjalan bersamaan dengan bundel JS, bukan menunggu
              Vue selesai merender <img>-nya. --}}
         @isset($heroPreload)
-            <link rel="preload" as="image" href="{{ $heroPreload }}" fetchpriority="high">
+            {{-- `imagesrcset`/`imagesizes` harus sama persis dengan yang dipakai
+                 <img> hero, kalau tidak preload-nya memilih kandidat berbeda dan
+                 fotonya terunduh dua kali. Lihat Opsi3Controller. --}}
+            <link rel="preload" as="image" href="{{ $heroPreload }}" fetchpriority="high"
+                @if (! empty($heroPreloadSrcset)) imagesrcset="{{ $heroPreloadSrcset }}" imagesizes="100vw" @endif>
         @endisset
 
         @vite(['resources/js/app.js'])

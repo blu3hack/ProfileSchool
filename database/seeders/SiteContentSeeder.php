@@ -49,18 +49,22 @@ class SiteContentSeeder extends Seeder
     protected function seedSettings(): void
     {
         foreach (config('site_content.fields', []) as $index => $field) {
-            SiteSetting::updateOrCreate(
-                ['key' => $field['key']],
-                [
-                    'group' => $field['group'] ?? 'umum',
-                    'type' => $field['type'] ?? 'text',
-                    'label' => $field['label'],
-                    'hint' => $field['hint'] ?? null,
-                    'sort_order' => $index,
-                    // Nilai hanya diisi saat baris baru dibuat.
-                    'value' => SiteSetting::where('key', $field['key'])->value('value') ?? ($field['default'] ?? null),
-                ],
-            );
+            $attributes = [
+                'group' => $field['group'] ?? 'umum',
+                'type' => $field['type'] ?? 'text',
+                'label' => $field['label'],
+                'hint' => $field['hint'] ?? null,
+                'sort_order' => $index,
+            ];
+
+            // Nilai hanya diisi saat baris baru dibuat. Baris yang sudah ada
+            // dibiarkan apa adanya — termasuk yang sengaja dikosongkan admin,
+            // supaya seeding ulang tidak menghidupkan kembali teks default.
+            if (! SiteSetting::where('key', $field['key'])->exists()) {
+                $attributes['value'] = $field['default'] ?? null;
+            }
+
+            SiteSetting::updateOrCreate(['key' => $field['key']], $attributes);
         }
     }
 
@@ -128,7 +132,7 @@ class SiteContentSeeder extends Seeder
     {
         $contacts = [
             ['icon' => '📍', 'label' => 'Alamat', 'value' => 'Jl. Pendidikan Islami No. 45, Cimahi Utara, Jawa Barat 40514', 'href' => null],
-            ['icon' => '📞', 'label' => 'Telepon', 'value' => '(022) 8765 4321', 'href' => 'tel:+622287654321'],
+            ['icon' => '📞', 'label' => 'Telepon', 'value' => '085 606 000 606', 'href' => 'tel:+6285606000606'],
             ['icon' => '✉️', 'label' => 'Email', 'value' => 'info@alazka.sch.id', 'href' => 'mailto:info@alazka.sch.id'],
             ['icon' => '🕐', 'label' => 'Jam Operasional', 'value' => 'Senin – Jumat, 07.00 – 16.00 WIB', 'href' => null],
         ];
@@ -144,7 +148,7 @@ class SiteContentSeeder extends Seeder
             ['label' => 'Instagram', 'href' => 'https://instagram.com/'],
             ['label' => 'YouTube', 'href' => 'https://youtube.com/'],
             ['label' => 'Facebook', 'href' => 'https://facebook.com/'],
-            ['label' => 'WhatsApp', 'href' => 'https://wa.me/622287654321'],
+            ['label' => 'WhatsApp', 'href' => 'https://wa.me/6285606000606'],
         ];
 
         foreach ($socials as $i => $row) {

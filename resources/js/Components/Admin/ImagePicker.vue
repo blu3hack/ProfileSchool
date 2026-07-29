@@ -153,7 +153,8 @@ const clear = () => {
             <p v-else-if="!library.length" class="py-4 text-center text-sm text-slate-500">
                 Pustaka masih kosong. Unggah gambar pertama Anda.
             </p>
-            <div v-else class="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-5">
+            <div v-else data-lenis-prevent
+                class="admin-scroll grid max-h-64 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-5">
                 <button v-for="media in library" :key="media.id" type="button"
                     class="group overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-teal-500"
                     :title="media.name" @click="choose(media)">

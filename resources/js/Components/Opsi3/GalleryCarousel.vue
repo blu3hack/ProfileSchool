@@ -41,7 +41,9 @@ const rows = computed(() => {
                     <button v-for="(image, cellIndex) in [...row, ...row]" :key="`${rowIndex}-${cellIndex}`" type="button"
                         class="group relative block h-40 w-60 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-void-900 transition duration-300 hover:border-aqua-400/50 sm:h-48 sm:w-72"
                         :aria-label="`Buka foto: ${image.title}`" @click="emit('open', image.i)">
-                        <img :src="image.src" :alt="image.alt || image.title" loading="lazy" decoding="async"
+                        <img :src="image.src" :srcset="image.srcset"
+                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                            :alt="image.alt || image.title" loading="lazy" decoding="async"
                             class="h-full w-full object-cover opacity-85 transition duration-500 group-hover:scale-105 group-hover:opacity-100">
                         <div class="scanlines pointer-events-none absolute inset-0 opacity-30"></div>
                         <!-- Judul muncul dari bawah saat hover. -->

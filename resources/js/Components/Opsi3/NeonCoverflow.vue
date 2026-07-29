@@ -10,6 +10,7 @@ import 'swiper/css/pagination';
 
 import HoloTilt from './HoloTilt.vue';
 import { newsAccent } from '../../lib/news-accent';
+import { useAutoplayInView } from '../../lib/swiper-autoplay';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
@@ -29,6 +30,12 @@ const coverflow = {
     slideShadows: false,
 };
 
+/**
+ * Efek coverflow menulis ulang transform 3D tiap slide di tiap frame, jadi
+ * autoplay-nya dijaga agar hanya berjalan selama carousel benar-benar terlihat.
+ */
+const { onSwiper } = useAutoplayInView();
+
 const breakpoints = {
     640: { slidesPerView: 2 },
     1024: { slidesPerView: 3 },
@@ -45,7 +52,7 @@ const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/be
         :centered-slides="true" :coverflow-effect="coverflow" :loop="hasLoop" grab-cursor
         :keyboard="{ enabled: true }"
         :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
-        :pagination="{ clickable: true }" navigation class="neon-swiper pb-20!">
+        :pagination="{ clickable: true }" navigation class="neon-swiper pb-20!" @swiper="onSwiper">
         <SwiperSlide v-for="item in props.items" :key="item.title" class="h-auto!">
             <HoloTilt class="h-full" :max="10" :lift="26" :glare-color="accentOf(item.accent).glare">
                 <!-- Seluruh kartu jadi tautan: klik di mana pun membuka detail berita. -->
@@ -58,7 +65,9 @@ const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/be
                         <div class="pattern-lattice-neon absolute inset-0 opacity-25"></div>
                         <div class="scanlines absolute inset-0 opacity-60"></div>
 
-                        <img v-if="item.image" :src="item.image" :alt="item.title" loading="lazy" decoding="async"
+                        <img v-if="item.image" :src="item.image" :srcset="item.srcset"
+                            sizes="(min-width: 640px) 24rem, 80vw"
+                            :alt="item.title" loading="lazy" decoding="async"
                             class="relative h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105 group-hover:opacity-100">
                         <span v-else
                             class="depth-2 relative text-5xl drop-shadow-[0_0_18px_rgba(52,226,245,0.6)] transition duration-500 group-hover:-translate-y-1">
@@ -100,7 +109,10 @@ const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/be
 </template>
 
 <style scoped>
-/* Slide non-aktif diredupkan & diturunkan saturasinya agar fokus ke tengah. */
+/* Slide non-aktif diredupkan & diturunkan saturasinya agar fokus ke tengah.
+   Sengaja tidak menyentuh `transform`: properti itu ditulis ulang EffectCoverflow
+   di tiap frame, jadi menambahkan transisi transform di sini akan membuat
+   efeknya tersendat. */
 .neon-swiper :deep(.swiper-slide) {
     opacity: 0.3;
     filter: saturate(0.6);

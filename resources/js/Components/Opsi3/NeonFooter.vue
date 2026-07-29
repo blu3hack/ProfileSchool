@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 
+import { PHONE_URL, WHATSAPP_URL } from '../../lib/contact';
 import { goToSection } from '../../lib/navigate';
 import { useTheme } from '../../lib/theme';
 
@@ -58,8 +59,8 @@ const initial = computed(() => (props.schoolName || 'A').trim().charAt(0).toUppe
 
 /** Tiga tombol kontak cepat — tujuannya diambil dari konten yang bisa diedit. */
 const quickActions = computed(() => [
-    { icon: '💬', label: 'WhatsApp Admin', href: text('quick_whatsapp', 'https://wa.me/622287654321'), tone: 'from-aqua-400 to-aqua-600' },
-    { icon: '📞', label: 'Telepon Sekolah', href: text('quick_phone', 'tel:+622287654321'), tone: 'from-volt-400 to-volt-500' },
+    { icon: '💬', label: 'WhatsApp Admin', href: text('quick_whatsapp', WHATSAPP_URL), tone: 'from-aqua-400 to-aqua-600' },
+    { icon: '📞', label: 'Telepon Sekolah', href: text('quick_phone', PHONE_URL), tone: 'from-volt-400 to-volt-500' },
     { icon: '✉️', label: 'Kirim Email', href: text('quick_email', 'mailto:info@alazka.sch.id'), tone: 'from-plasma-400 to-plasma-500' },
 ]);
 
@@ -77,9 +78,11 @@ const goTo = (hash) => goToSection(hash);
             <div class="cyber-floor absolute inset-x-[-25%] top-0 h-64"></div>
         </div>
 
-        <div class="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-aqua-500/15 blur-3xl"></div>
-        <div class="pointer-events-none absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-plasma-500/12 blur-3xl">
-        </div>
+        <!-- Gradient, bukan `blur-3xl` — lihat catatan `.orb-glow` di app.css. -->
+        <div class="orb-glow pointer-events-none absolute -left-24 top-24 h-72 w-72"
+            style="--orb-color: rgba(15, 195, 221, 0.18)"></div>
+        <div class="orb-glow pointer-events-none absolute -right-20 bottom-0 h-80 w-80"
+            style="--orb-color: rgba(233, 48, 177, 0.15)"></div>
 
         <div class="container-page relative pb-12 pt-28 sm:pt-36">
             <!-- Tombol kontak cepat -->

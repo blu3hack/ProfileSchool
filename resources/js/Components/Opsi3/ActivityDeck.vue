@@ -5,11 +5,16 @@ import { A11y, Autoplay, EffectCards, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 
+import { useAutoplayInView } from '../../lib/swiper-autoplay';
+
 const props = defineProps({
     items: { type: Array, default: () => [] },
 });
 
 const modules = [A11y, Autoplay, EffectCards, Keyboard];
+
+/** Tumpukan berhenti berputar saat section-nya tidak terlihat. */
+const { onSwiper } = useAutoplayInView();
 
 /**
  * Aksen kartu. Warna permukaan disuntikkan lewat custom property
@@ -45,7 +50,8 @@ const hasLoop = props.items.length > 2;
 <template>
     <Swiper :modules="modules" effect="cards" :card-effect="cards" :loop="hasLoop" grab-cursor
         :keyboard="{ enabled: true }"
-        :autoplay="{ delay: 4200, disableOnInteraction: false, pauseOnMouseEnter: true }" class="deck-swiper">
+        :autoplay="{ delay: 4200, disableOnInteraction: false, pauseOnMouseEnter: true }" class="deck-swiper"
+        @swiper="onSwiper">
         <SwiperSlide v-for="item in props.items" :key="item.title">
             <article
                 class="deck-surface relative flex h-full flex-col justify-between overflow-hidden rounded-[2rem] p-7 text-slate-50 ring-1 ring-inset"

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Orderable;
+use App\Support\ImageVariant;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,6 +30,7 @@ class Achievement extends Model
             'student' => $this->student,
             'grade' => $this->grade,
             'image' => MediaUrl::resolve($this->image),
+            'srcset' => ImageVariant::srcset($this->image),
         ];
     }
 }

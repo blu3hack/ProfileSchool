@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ImageVariant;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -147,6 +148,7 @@ class Event extends Model
             'registrationUrl' => $this->registration_url,
             'registrationLabel' => $this->registration_label ?: 'Daftar Sekarang',
             'image' => MediaUrl::resolve($this->image),
+            'srcset' => ImageVariant::srcset($this->image),
             'imageCaption' => $this->image_caption,
             'gallery' => collect($this->gallery ?? [])
                 ->map(fn ($item) => [

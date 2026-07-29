@@ -34,6 +34,17 @@ export function createSmoothScroll(options = {}) {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
         touchMultiplier: 1.6,
+        /**
+         * Roda mouse & gesture di ATAS elemen ber-scroll sendiri (modal,
+         * lightbox, daftar bertinggi tetap) diserahkan kembali ke browser.
+         *
+         * Tanpa ini Lenis memanggil `preventDefault()` pada setiap wheel/touch
+         * di seluruh dokumen lalu menggulir <html> — elemen di dalamnya jadi
+         * hanya bisa digulir dengan menyeret batang scrollbar. Lenis
+         * memeriksa `overflow` node yang dilewati event (hasilnya di-cache 2
+         * detik), jadi biayanya kecil.
+         */
+        allowNestedScroll: true,
         ...options,
     });
 
@@ -88,7 +99,13 @@ export function getSmoothScroll() {
 
 /** Dipakai saat pindah halaman Inertia: balik ke atas tanpa animasi. */
 export function resetScroll() {
-    lenis?.scrollTo(0, { immediate: true });
+    if (lenis) {
+        lenis.scrollTo(0, { immediate: true });
+    } else {
+        // Halaman tanpa Lenis (panel admin): gulir jendela langsung.
+        window.scrollTo(0, 0);
+    }
+
     refreshScrollTriggers();
 }
 

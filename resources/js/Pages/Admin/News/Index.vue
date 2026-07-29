@@ -52,12 +52,14 @@ const togglePublish = (item) => {
             <span class="text-sm text-slate-500">{{ props.news.total }} berita</span>
         </div>
 
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <!-- `overflow-x-auto`: kolom yang melebihi lebar layar bisa digulir,
+             bukan terpotong seperti saat memakai `overflow-hidden`. -->
+        <div data-lenis-prevent class="admin-scroll overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <div v-if="!props.news.data.length" class="px-5 py-12 text-center text-sm text-slate-500">
                 Tidak ada berita yang cocok.
             </div>
 
-            <table v-else class="w-full text-left text-sm">
+            <table v-else class="w-full min-w-3xl text-left text-sm">
                 <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                     <tr>
                         <th class="w-20 px-4 py-3">Banner</th>

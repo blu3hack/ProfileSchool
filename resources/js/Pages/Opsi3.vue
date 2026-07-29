@@ -1,25 +1,40 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 import NeonNavbar from '../Components/Opsi3/NeonNavbar.vue';
 import HoloTilt from '../Components/Opsi3/HoloTilt.vue';
-import NeonCoverflow from '../Components/Opsi3/NeonCoverflow.vue';
+import DeferVisible from '../Components/Opsi3/DeferVisible.vue';
 import EventCard from '../Components/Opsi3/EventCard.vue';
 import EventCountdown from '../Components/Opsi3/EventCountdown.vue';
-import ActivityDeck from '../Components/Opsi3/ActivityDeck.vue';
 import NeonTimeline from '../Components/Opsi3/NeonTimeline.vue';
 import GalleryCarousel from '../Components/Opsi3/GalleryCarousel.vue';
 import GalleryLightbox from '../Components/Opsi3/GalleryLightbox.vue';
+import NeonExtraLinks from '../Components/Opsi3/NeonExtraLinks.vue';
 import NeonFooter from '../Components/Opsi3/NeonFooter.vue';
+import { WHATSAPP_URL } from '../lib/contact';
 import { getSmoothScroll, gsap, refreshScrollTriggers, ScrollTrigger } from '../lib/smooth-scroll';
 import { newsAccent } from '../lib/news-accent';
 import { useSlideshow } from '../lib/slideshow';
 import { useTheme } from '../lib/theme';
 
+/**
+ * Dua carousel di bawah ini satu-satunya pemakai Swiper di beranda — bersama
+ * CSS-nya ±40 KB gzip, dulu sekitar empat perlima berkas halaman ini. Keduanya
+ * berada jauh di bawah layar pertama, jadi dimuat terpisah dan baru diunduh
+ * ketika <DeferVisible> membuat isinya (lihat pemakaiannya di template).
+ */
+const NeonCoverflow = defineAsyncComponent(() => import('../Components/Opsi3/NeonCoverflow.vue'));
+const ActivityDeck = defineAsyncComponent(() => import('../Components/Opsi3/ActivityDeck.vue'));
+
 const props = defineProps({
     schoolName: { type: String, default: 'Alazka Islamic School' },
     navLinks: { type: Array, default: () => [] },
+    /**
+     * Menu tambahan bikinan admin. Muncul di dua tempat sekaligus: dropdown
+     * "Lainnya" pada navbar dan section kartu tepat di atas footer.
+     */
+    extraLinks: { type: Array, default: () => [] },
     /** Seluruh teks halaman; diedit admin lewat /admin/konten. */
     content: { type: Object, default: () => ({}) },
     heroImage: { type: Object, default: () => ({}) },
@@ -80,28 +95,28 @@ const scrollTo = (hash) => {
 const pillarAccents = {
     mint: {
         chip: 'border-aqua-400/40 bg-aqua-400/12 text-aqua-200',
-        orb: 'bg-aqua-500/40',
+        orb: 'rgba(15, 195, 221, 0.42)',
         glow: 'neon-aqua',
         glare: 'rgba(124, 243, 255, 0.3)',
         icon: 'from-aqua-400/30 to-aqua-600/10 text-aqua-200 shadow-[0_0_26px_-6px_rgba(52,226,245,0.9)]',
     },
     gold: {
         chip: 'border-solar-400/40 bg-solar-400/12 text-solar-300',
-        orb: 'bg-solar-400/35',
+        orb: 'rgba(255, 199, 61, 0.38)',
         glow: 'neon-solar',
         glare: 'rgba(255, 199, 61, 0.28)',
         icon: 'from-solar-400/30 to-solar-500/10 text-solar-300 shadow-[0_0_26px_-6px_rgba(255,199,61,0.9)]',
     },
     sky: {
         chip: 'border-volt-400/40 bg-volt-400/12 text-volt-300',
-        orb: 'bg-volt-500/35',
+        orb: 'rgba(139, 77, 255, 0.38)',
         glow: 'neon-volt',
         glare: 'rgba(169, 123, 255, 0.3)',
         icon: 'from-volt-400/30 to-volt-500/10 text-volt-300 shadow-[0_0_26px_-6px_rgba(169,123,255,0.9)]',
     },
     lilac: {
         chip: 'border-plasma-400/40 bg-plasma-400/12 text-plasma-300',
-        orb: 'bg-plasma-500/35',
+        orb: 'rgba(233, 48, 177, 0.38)',
         glow: 'neon-plasma',
         glare: 'rgba(255, 94, 207, 0.3)',
         icon: 'from-plasma-400/30 to-plasma-500/10 text-plasma-300 shadow-[0_0_26px_-6px_rgba(255,94,207,0.9)]',
@@ -156,6 +171,34 @@ const heroSlides = computed(() => {
 });
 
 const { active: activeSlide } = useSlideshow(() => heroSlides.value.length, { interval: 6500 });
+
+/**
+ * Indeks slide hero yang benar-benar dipasang di DOM.
+ *
+ * Sebelumnya SELURUH slide dirender sekaligus. Karena semuanya bertumpuk
+ * `absolute inset-0` di dalam viewport — cuma dibedakan opacity — `loading="lazy"`
+ * tidak menahan apa pun: bagi browser semuanya "terlihat", jadi keempatnya
+ * diunduh dan didekode segera. Pada batas 1920px (App\Support\ImageOptimizer),
+ * satu foto yang sudah didekode memakan 1920 × 1080 × 4 byte ≈ 8 MB memori
+ * tekstur; empat slide ≈ 33 MB yang ditahan selamanya, plus empat dekode penuh
+ * yang berebut main thread tepat saat halaman sedang hidrasi.
+ *
+ * Sekarang cukup tiga: yang sedang memudar keluar, yang aktif, dan yang
+ * berikutnya. Crossfade tetap utuh (dua peserta transisi selalu ada), yang
+ * berikutnya punya jatah satu siklus penuh (6,5 detik) untuk selesai diunduh
+ * & didekode sebelum gilirannya tiba, dan puncak memorinya turun ke ~25%.
+ */
+const mountedSlides = computed(() => {
+    const total = heroSlides.value.length;
+
+    if (total <= 1) {
+        return new Set(total ? [0] : []);
+    }
+
+    const index = activeSlide.value;
+
+    return new Set([(index - 1 + total) % total, index, (index + 1) % total]);
+});
 
 /** Slide yang sedang tampil — dipakai untuk kredit foto. */
 const currentSlide = computed(() => heroSlides.value[activeSlide.value] ?? {});
@@ -241,9 +284,13 @@ onBeforeUnmount(() => ctx?.revert());
     <Head />
 
     <!-- `data-theme` inilah sakelar visual halaman: CSS menimpa variabel warna
-         berdasarkan nilainya, jadi seluruh utilitas Tailwind ikut berganti. -->
+         berdasarkan nilainya, jadi seluruh utilitas Tailwind ikut berganti.
+         Sumber utamanya kini <html> (dipasang server + lib/theme.js) supaya
+         <body> dan elemen ber-teleport ikut bertema; salinan di sini menjaga
+         isi halaman tetap benar seandainya atribut di <html> tidak terpasang. -->
     <div :data-theme="theme" class="void-bg min-h-screen overflow-x-clip font-sans text-slate-200">
-        <NeonNavbar :school-name="props.schoolName" :links="navLinks" :content="props.content" />
+        <NeonNavbar :school-name="props.schoolName" :links="navLinks" :extra-links="props.extraLinks"
+            :content="props.content" />
 
         <main class="relative z-10">
             <!-- ============================ HERO ============================ -->
@@ -257,12 +304,18 @@ onBeforeUnmount(() => ctx?.revert());
                      supaya seluruh tumpukan bergerak bersama. -->
                 <div class="absolute inset-0 -z-30 overflow-hidden">
                     <div ref="heroPhoto" class="relative h-full w-full scale-110">
-                        <img v-for="(slide, index) in heroSlides" :key="slide.src" :src="slide.src" :alt="slide.alt"
-                            :fetchpriority="index === 0 ? 'high' : 'auto'" :loading="index === 0 ? 'eager' : 'lazy'"
-                            :decoding="index === 0 ? 'sync' : 'async'"
-                            :aria-hidden="index === activeSlide ? 'false' : 'true'"
-                            class="hero-photo hero-slide absolute inset-0 h-full w-full object-cover object-center"
-                            :class="index === activeSlide ? 'opacity-100' : 'opacity-0'">
+                        <!-- Hanya slide sebelumnya/aktif/berikutnya yang dipasang —
+                             lihat catatan pada `mountedSlides`. -->
+                        <template v-for="(slide, index) in heroSlides" :key="slide.src">
+                            <img v-if="mountedSlides.has(index)" :src="slide.src" :alt="slide.alt"
+                                :srcset="slide.srcset" sizes="100vw"
+                                :fetchpriority="index === 0 ? 'high' : 'auto'"
+                                :loading="index === 0 ? 'eager' : 'lazy'"
+                                :decoding="index === 0 ? 'sync' : 'async'"
+                                :aria-hidden="index === activeSlide ? 'false' : 'true'"
+                                class="hero-photo hero-slide absolute inset-0 h-full w-full object-cover object-center"
+                                :class="index === activeSlide ? 'opacity-100' : 'opacity-0'">
+                        </template>
                     </div>
                 </div>
 
@@ -385,8 +438,12 @@ onBeforeUnmount(() => ctx?.revert());
                             <article
                                 class="holo-panel holo-edge group/card relative flex h-full flex-col overflow-hidden rounded-[2rem] transition-shadow duration-500"
                                 :class="accentOf(pillar.accent).glow">
-                                <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl"
-                                    :class="accentOf(pillar.accent).orb"></div>
+                                <!-- Gradient, bukan `blur-3xl`: kartu ini dibungkus
+                                     HoloTilt yang menskalakan seluruh isinya saat
+                                     hover, dan `filter: blur()` di dalam elemen ber-skala
+                                     harus di-raster ulang tiap frame. -->
+                                <div class="orb-glow pointer-events-none absolute -right-16 -top-16 h-48 w-48"
+                                    :style="{ '--orb-color': accentOf(pillar.accent).orb }"></div>
                                 <div class="pattern-lattice-neon pointer-events-none absolute inset-0 opacity-15"></div>
                                 <div class="scanlines pointer-events-none absolute inset-0 opacity-40"></div>
 
@@ -476,7 +533,9 @@ onBeforeUnmount(() => ctx?.revert());
                     </div>
 
                     <div v-reveal="replay({ from: 'fade', delay: 0.25 })" class="mt-14">
-                        <NeonCoverflow :items="props.news" />
+                        <DeferVisible min-height="32rem">
+                            <NeonCoverflow :items="props.news" @vue:mounted="refreshScrollTriggers" />
+                        </DeferVisible>
                     </div>
                 </div>
             </section>
@@ -644,7 +703,9 @@ onBeforeUnmount(() => ctx?.revert());
                                         radial-gradient(60% 60% at 78% 80%, rgba(233, 48, 177, 0.24), transparent 70%),
                                         radial-gradient(70% 70% at 50% 50%, rgba(139, 77, 255, 0.22), transparent 72%)">
                                 </div>
-                                <ActivityDeck :items="props.activities" />
+                                <DeferVisible min-height="25rem">
+                                    <ActivityDeck :items="props.activities" @vue:mounted="refreshScrollTriggers" />
+                                </DeferVisible>
                             </div>
                         </div>
                     </div>
@@ -726,12 +787,17 @@ onBeforeUnmount(() => ctx?.revert());
                         class="scan-sweep relative overflow-hidden rounded-[2.5rem] border border-aqua-400/25 bg-linear-to-br from-void-800 via-void-900 to-void-950 px-8 py-16 text-center shadow-[0_0_80px_-30px_rgba(52,226,245,0.8)] sm:px-16">
                         <div class="pattern-lattice-neon pointer-events-none absolute inset-0 opacity-10"></div>
                         <div class="cyber-grid pointer-events-none absolute inset-0 opacity-40"></div>
-                        <div
-                            class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-aqua-500/25 blur-3xl">
-                        </div>
-                        <div
-                            class="pointer-events-none absolute -bottom-28 -right-20 h-80 w-80 rounded-full bg-plasma-500/20 blur-3xl">
-                        </div>
+                        <!-- Pendar latar. Gradient, BUKAN `blur-3xl`: pembungkusnya
+                             dianimasikan `zoom` (skala) oleh v-reveal, dan `filter: blur()`
+                             harus di-raster ulang tiap kali skala induknya berubah —
+                             satu hentakan penuh tiap section ini masuk layar. Karena
+                             `replay()` memakai `once: false`, itu terjadi berulang kali.
+                             Radial gradient cukup digambar sekali lalu diskalakan
+                             compositor. Lihat `.orb-glow` di app.css. -->
+                        <div class="orb-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72"
+                            style="--orb-color: rgba(15, 195, 221, 0.3)"></div>
+                        <div class="orb-glow pointer-events-none absolute -bottom-28 -right-20 h-80 w-80"
+                            style="--orb-color: rgba(233, 48, 177, 0.24)"></div>
 
                         <div class="relative">
                             <span
@@ -752,7 +818,8 @@ onBeforeUnmount(() => ctx?.revert());
                             </p>
 
                             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                                <a :href="text('ppdb_primary_href', 'https://wa.me/622287654321')"
+                                <a :href="text('ppdb_primary_href', WHATSAPP_URL)" target="_blank"
+                                    rel="noopener noreferrer"
                                     class="w-full rounded-full bg-aqua-500 bg-linear-to-r from-aqua-400 to-volt-400 px-8 py-4 text-sm font-bold text-void-950 shadow-[0_0_34px_-6px_rgba(52,226,245,0.9)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(169,123,255,0.95)] sm:w-auto">
                                     {{ text('ppdb_primary_label', 'Daftar via WhatsApp') }}
                                 </a>
@@ -766,6 +833,12 @@ onBeforeUnmount(() => ctx?.revert());
                     </div>
                 </div>
             </section>
+
+            <!-- ====================== MENU TAMBAHAN ======================= -->
+            <!-- Etalase menu bikinan admin, sengaja paling bawah: pengunjung
+                 yang sampai sini sudah melewati seluruh cerita halaman.
+                 Hilang sendiri selama admin belum menambahkan satu pun. -->
+            <NeonExtraLinks v-if="props.extraLinks.length" :items="props.extraLinks" :content="props.content" />
         </main>
 
         <NeonFooter :school-name="props.schoolName" :links="navLinks" :contacts="props.contacts"
@@ -779,9 +852,15 @@ onBeforeUnmount(() => ctx?.revert());
 <style scoped>
 /* Crossfade foto hero: durasi panjang & ease lembut agar pergantiannya
    terasa mengalir, bukan berkedip. */
+/* `will-change: opacity` SENGAJA TIDAK dipasang di sini.
+   Dulu ada, dan efeknya: setiap slide dipromosikan jadi lapisan compositor
+   tersendiri sejak dimuat dan ditahan begitu SELAMANYA — 1920×1080×4 byte ≈ 8 MB
+   per slide, padahal transisinya cuma berjalan 1,4 detik tiap 6,5 detik. Browser
+   sudah otomatis mempromosikan elemen selama transisi `opacity` berlangsung,
+   lalu melepas lapisannya begitu selesai. Petunjuk permanen di sini hanya
+   menahan memori GPU tanpa menambah kemulusan apa pun. */
 .hero-slide {
     transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: opacity;
 }
 
 /* Fade kartu profil — sedikit lebih cepat dari fotonya, dengan geser halus

@@ -27,11 +27,23 @@ class Opsi3Controller extends Opsi2Controller
      * Foto hero adalah elemen LCP halaman ini. Tanpa petunjuk di <head>,
      * browser baru menemukannya setelah bundel JS diunduh dan Vue selesai
      * merender — jadi alamatnya dititipkan ke root view untuk di-preload.
+     *
+     * `srcset` ikut dititipkan, dan itu WAJIB: begitu <img> punya srcset,
+     * browser memilih kandidat sesuai lebar layar. Preload yang hanya menyebut
+     * `src` ukuran penuh akan meleset dari pilihan itu — fotonya jadi diunduh
+     * DUA KALI, dan yang lebih besar duluan. Blade memasangkannya sebagai
+     * `imagesrcset`/`imagesizes` supaya preload scanner memilih kandidat yang
+     * sama persis dengan yang nanti dipakai <img>.
      */
     public function __invoke(): Response
     {
+        $hero = $this->heroSlides()[0] ?? [];
+
         return Inertia::render($this->page, $this->payload())
-            ->withViewData(['heroPreload' => $this->heroSlides()[0]['src'] ?? null]);
+            ->withViewData([
+                'heroPreload' => $hero['src'] ?? null,
+                'heroPreloadSrcset' => $hero['srcset'] ?? null,
+            ]);
     }
 
     protected function payload(): array

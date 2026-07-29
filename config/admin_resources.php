@@ -3,6 +3,7 @@
 use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\ContactInfo;
+use App\Models\CustomLink;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\NavLink;
@@ -160,7 +161,7 @@ return [
             ['name' => 'icon', 'label' => 'Ikon (emoji)', 'type' => 'text', 'rules' => ['required', 'string', 'max:16'], 'default' => '📍'],
             ['name' => 'label', 'label' => 'Label', 'type' => 'text', 'rules' => ['required', 'string', 'max:60'], 'hint' => 'Contoh: Alamat, Telepon, Email'],
             ['name' => 'value', 'label' => 'Isi', 'type' => 'textarea', 'rules' => ['required', 'string', 'max:500']],
-            ['name' => 'href', 'label' => 'Tautan', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255'], 'hint' => 'Opsional. Contoh: tel:+622287654321 atau mailto:info@alazka.sch.id'],
+            ['name' => 'href', 'label' => 'Tautan', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255'], 'hint' => 'Opsional. Contoh: tel:+6285606000606 atau mailto:info@alazka.sch.id'],
         ],
     ],
 
@@ -187,6 +188,26 @@ return [
         'fields' => [
             ['name' => 'label', 'label' => 'Teks Menu', 'type' => 'text', 'rules' => ['required', 'string', 'max:60']],
             ['name' => 'hash', 'label' => 'Target', 'type' => 'text', 'rules' => ['required', 'string', 'max:60'], 'default' => '#beranda', 'hint' => 'Contoh: #beranda, #berita, #prestasi'],
+        ],
+    ],
+
+    'customlinks' => [
+        'label' => 'Menu Tambahan',
+        'singular' => 'Menu Tambahan',
+        'icon' => '➕',
+        'description' => 'Menu bebas bikinan sendiri — mis. "Jadwal KBM", "E-Rapor", atau "Brosur PPDB". Setiap item otomatis masuk ke dropdown "Lainnya" di navbar sekaligus tampil sebagai kartu pada section "Menu Lainnya" tepat di atas footer.',
+        'model' => CustomLink::class,
+        'columns' => ['icon', 'label', 'href'],
+        'fields' => [
+            ['name' => 'icon', 'label' => 'Ikon (emoji)', 'type' => 'text', 'rules' => ['required', 'string', 'max:16'], 'default' => '🔗'],
+            ['name' => 'label', 'label' => 'Teks Menu', 'type' => 'text', 'rules' => ['required', 'string', 'max:60'], 'hint' => 'Singkat saja — teks ini tampil di dropdown navbar.'],
+            // Regex-nya menjaga alamat tetap salah satu bentuk yang dikenali
+            // `linkKind()` di sisi Vue. Tanpa itu, "www.sekolah.id" tersimpan
+            // sebagai alamat internal dan menghasilkan /www.sekolah.id.
+            ['name' => 'href', 'label' => 'Target', 'type' => 'text', 'rules' => ['required', 'string', 'max:255', 'regex:#^(\#[\w-]+|/[^\s]*|https?://[^\s]+|mailto:[^\s]+|tel:[^\s]+)$#i'], 'default' => 'https://', 'hint' => 'Salah satu dari: #beranda (gulir ke section beranda), /berita (halaman situs ini), https://… (dibuka di tab baru), mailto:…, atau tel:…'],
+            ['name' => 'description', 'label' => 'Keterangan', 'type' => 'textarea', 'rules' => ['nullable', 'string', 'max:300'], 'hint' => 'Satu–dua kalimat penjelas pada kartu di section bawah. Opsional.'],
+            ['name' => 'accent', 'label' => 'Warna Aksen', 'type' => 'select', 'options' => $accents, 'rules' => ['required', 'in:mint,gold,sky,lilac'], 'default' => 'mint'],
+            ['name' => 'image', 'label' => 'Gambar Kartu', 'type' => 'image', 'rules' => ['nullable', 'string', 'max:2048'], 'hint' => 'Opsional. Bila kosong, kartu memakai ikon emoji di atas.'],
         ],
     ],
 

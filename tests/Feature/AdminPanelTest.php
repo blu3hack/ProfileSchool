@@ -70,6 +70,28 @@ class AdminPanelTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Generasi Unggul', false);
     }
 
+    public function test_field_yang_dikosongkan_tidak_terisi_default_lagi(): void
+    {
+        $this->seed(\Database\Seeders\SiteContentSeeder::class);
+
+        $this->actingAs($this->admin())
+            ->put('/admin/konten', ['values' => ['hero_title_3' => '']])
+            ->assertRedirect();
+
+        // Form admin harus membuka kembali dalam keadaan kosong, bukan
+        // kembali ke default 'Berhati' dari config/site_content.php.
+        $hero = collect(\App\Support\PageContent::schema())->firstWhere('key', 'hero');
+        $field = collect($hero['fields'])->firstWhere('key', 'hero_title_3');
+
+        $this->assertNotNull($field);
+        $this->assertEmpty($field['value']);
+
+        // Seeding ulang pun tidak boleh menghidupkan kembali nilai default.
+        $this->seed(\Database\Seeders\SiteContentSeeder::class);
+
+        $this->assertEmpty(SiteSetting::where('key', 'hero_title_3')->value('value'));
+    }
+
     public function test_admin_bisa_menambah_dan_menghapus_prestasi(): void
     {
         $admin = $this->admin();
