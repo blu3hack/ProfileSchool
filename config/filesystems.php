@@ -1,5 +1,23 @@
 <?php
 
+/*
+ * Akar disk `public`.
+ *
+ * Bawaannya `storage/app/public`, dijangkau dari document root lewat symlink —
+ * layout standar Laravel. Di server produksi (LiteSpeed) layout itu punya satu
+ * akibat yang mahal: konfigurasi per-direktori DILEWATI untuk path yang dicapai
+ * lewat symlink ke luar document root. Artinya tidak ada satu pun direktif
+ * `.htaccess` yang berlaku untuk /storage — termasuk `Header set Cache-Control`,
+ * sehingga seluruh gambar terkirim tanpa header cache dan pengunjung berulang
+ * memvalidasi ulang setiap berkas satu per satu.
+ *
+ * Karena itu di sana disk ini diakar-kan ke direktori NYATA di dalam document
+ * root (`public/storage`) lewat FILESYSTEM_PUBLIC_ROOT. Dibuat env, bukan
+ * diubah langsung, karena instance smpialazka.com memakai repo yang sama dan
+ * masih memakai layout symlink.
+ */
+$publicRoot = env('FILESYSTEM_PUBLIC_ROOT') ?: storage_path('app/public');
+
 return [
 
     /*
@@ -40,7 +58,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => $publicRoot,
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -73,8 +91,11 @@ return [
     |
     */
 
-    'links' => [
-        public_path('storage') => storage_path('app/public'),
-    ],
+    // Symlink hanya relevan selama disk publik masih berakar di storage/.
+    // Bila sudah dipindah ke dalam public/, `storage:link` justru akan
+    // bertabrakan dengan direktori nyata yang ada di sana.
+    'links' => $publicRoot === storage_path('app/public')
+        ? [public_path('storage') => storage_path('app/public')]
+        : [],
 
 ];
