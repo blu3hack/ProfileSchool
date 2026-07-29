@@ -426,6 +426,13 @@
 
     --deck-accent-mix: 88%;
     --deck-tail: var(--color-void-950);
+    /* Dasar buram kartu kegiatan. Wajib 100% opaque: kartu di tumpukan
+       EffectCards saling bertindih, jadi kartu terdepan harus benar-benar
+       menutup teks kartu di belakangnya. */
+    --deck-base: var(--color-void-800);
+    --deck-chip: rgba(255, 255, 255, 0.1);
+    --deck-chip-border: rgba(255, 255, 255, 0.08);
+    --deck-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.85);
 }
 
 [data-theme='light'] {
@@ -499,6 +506,13 @@
 
     --deck-accent-mix: 24%;
     --deck-tail: var(--color-void-900);
+    /* Putih penuh, bukan rgba: di tema terang aksen gradasi hanya 24% —
+       tanpa dasar buram, sisa 76%-nya meneruskan teks kartu di belakangnya
+       dan tumpukan terlihat tumpang tindih. */
+    --deck-base: #ffffff;
+    --deck-chip: rgba(10, 17, 36, 0.05);
+    --deck-chip-border: rgba(10, 17, 36, 0.08);
+    --deck-shadow: 0 18px 38px -22px rgba(16, 36, 72, 0.45);
 }
 
 /* Latar halaman: dua nebula neon yang bergeser perlahan di atas warna dasar. */
@@ -691,12 +705,28 @@
     filter: var(--veil-photo-filter);
 }
 
-/* Permukaan kartu kegiatan — aksen diatur lewat `--deck-accent` inline. */
+/* Permukaan kartu kegiatan — aksen diatur lewat `--deck-accent` inline.
+ *
+ * Gradasinya memakai `color-mix(… , transparent)`, jadi ia SELALU punya sisi
+ * yang tembus pandang (di tema terang bahkan 76% pada titik awal). Itu tidak
+ * masalah selama ada `background-color` buram di bawahnya: kartu kegiatan
+ * disusun bertumpuk oleh Swiper EffectCards, dan tanpa dasar buram teks kartu
+ * belakang ikut terbaca menembus kartu terdepan. Karena itu gradasinya
+ * dipasang sebagai `background-image` DI ATAS `background-color`, bukan
+ * shorthand `background` yang akan menimpa dasarnya. */
 .deck-surface {
-    background: linear-gradient(140deg,
+    background-color: var(--deck-base, var(--color-void-800));
+    background-image: linear-gradient(140deg,
             color-mix(in oklab, var(--deck-accent, var(--color-aqua-500)) var(--deck-accent-mix), transparent) 0%,
             var(--color-void-800) 58%,
             var(--deck-tail) 100%);
+}
+
+/* Kotak ikon & pil jadwal di dalam kartu. `bg-white/10` bawaan tak terlihat
+   saat dasarnya putih, jadi kepekatannya ikut tema. */
+.deck-chip {
+    background-color: var(--deck-chip);
+    box-shadow: inset 0 0 0 1px var(--deck-chip-border);
 }
 
 /* Tepi gradasi berjalan — "conic border" khas UI futuristik. */
