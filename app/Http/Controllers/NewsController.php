@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\NewsRepository;
 use App\Support\PageContent;
+use App\Support\PageMeta;
 use App\Support\SiteInfo;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -28,6 +29,14 @@ class NewsController extends Controller
             'featured' => isset($articles[0]) ? NewsRepository::toCard($articles[0]) : null,
             'articles' => NewsRepository::cards(array_slice($articles, 1)),
             'categories' => NewsRepository::categories(),
+        ])->withViewData([
+            'meta' => PageMeta::make([
+                'title' => 'Berita & Pengumuman',
+                'description' => PageContent::get('news_description'),
+                // Foto berita terbaru mewakili halaman indeks.
+                'image' => $articles[0]['image'] ?? null,
+                'url' => route('news.index'),
+            ]),
         ]);
     }
 
@@ -46,6 +55,19 @@ class NewsController extends Controller
             ...$this->layoutData(),
             'article' => $article,
             'related' => NewsRepository::cards(NewsRepository::related($slug)),
+        ])->withViewData([
+            // Inilah halaman yang paling sering dibagikan ke WhatsApp, jadi
+            // kartu pratinjaunya diisi dari artikelnya sendiri: judul, foto
+            // utama, dan ringkasan yang sama seperti yang tampil di kartu berita.
+            'meta' => PageMeta::make([
+                'title' => $article['title'],
+                'description' => $article['excerpt'],
+                'image' => $article['image'],
+                'imageAlt' => $article['imageCaption'] ?: $article['title'],
+                'url' => route('news.show', $article['slug']),
+                'type' => 'article',
+                'publishedTime' => $article['publishedAt'],
+            ]),
         ]);
     }
 
@@ -55,7 +77,6 @@ class NewsController extends Controller
         return [
             'schoolName' => SiteInfo::name(),
             'navLinks' => SiteInfo::navLinks(),
-            'extraLinks' => SiteInfo::extraLinks(),
             'content' => PageContent::all(),
             'contacts' => SiteInfo::contacts(),
             'socials' => SiteInfo::socials(),

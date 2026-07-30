@@ -178,6 +178,82 @@
     background-color: rgba(71, 85, 105, 0.7);
 }
 
+/* ============================================================
+   Kotak teks kaya di panel admin (blok "Teks / Paragraf" halaman kustom).
+
+   Isinya adalah tag polos hasil `contenteditable`, dan preflight Tailwind
+   menelanjangi tag polos — tanpa aturan di bawah, sub judul dan daftar tampak
+   sama seperti paragraf biasa saat disunting, padahal di halaman publik nanti
+   berbeda. Nilainya dibuat menyerupai `.page-prose` supaya apa yang dilihat
+   admin mendekati hasil akhirnya.
+   ============================================================ */
+.admin-rich-text :is(h1, h2, h3) {
+    font-weight: 700;
+    line-height: 1.3;
+    margin-block: 0.75rem 0.35rem;
+}
+
+.admin-rich-text :is(h1, h2) {
+    font-size: 1.25rem;
+}
+
+.admin-rich-text h3 {
+    font-size: 1.0625rem;
+}
+
+.admin-rich-text p {
+    margin-block: 0.5rem;
+}
+
+.admin-rich-text :is(ul, ol) {
+    margin-block: 0.5rem;
+    padding-inline-start: 1.5rem;
+}
+
+.admin-rich-text ul {
+    list-style: disc;
+}
+
+.admin-rich-text ol {
+    list-style: decimal;
+}
+
+.admin-rich-text blockquote {
+    border-inline-start: 3px solid var(--color-teal-400, #2dd4bf);
+    color: #475569;
+    font-style: italic;
+    margin-block: 0.5rem;
+    padding-inline-start: 0.9rem;
+}
+
+.admin-rich-text a {
+    color: #0d9488;
+    text-decoration: underline;
+}
+
+/* Petunjuk isi saat kotaknya masih kosong — `contenteditable` tidak punya
+   atribut `placeholder` sendiri. */
+.admin-rich-text:empty::before {
+    color: #94a3b8;
+    content: attr(data-placeholder);
+}
+
+/* Editor kode: tinggi ditentukan di sini, bukan lewat opsi CodeMirror. */
+.admin-code-editor .cm-editor {
+    max-height: 34rem;
+}
+
+.admin-code-editor .cm-scroller {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    min-height: 18rem;
+}
+
+.admin-code-editor .cm-focused {
+    outline: none;
+}
+
 /* Varian untuk latar gelap (sidebar). */
 .admin-scroll-dark {
     scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
@@ -433,6 +509,27 @@
     --deck-chip: rgba(255, 255, 255, 0.1);
     --deck-chip-border: rgba(255, 255, 255, 0.08);
     --deck-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.85);
+
+    /* Tombol ajakan utama hero ("Daftar Sekarang").
+     *
+     * Dulu tombol ini menyusun sendiri warnanya dari utilitas Tailwind:
+     * `bg-aqua-500 from-aqua-400 via-aqua-500 to-volt-400` + `text-void-950`.
+     * Itu memendam satu asumsi diam-diam — bahwa aksen SELALU neon terang
+     * sehingga tintanya boleh gelap. Begitu admin mengganti palet lewat menu
+     * "Tema Website" (App\Support\ThemePalette), asumsi itu runtuh: aksen yang
+     * dipilih bisa saja seterang tintanya, dan labelnya lenyap padahal
+     * tombolnya masih ada dan tetap bisa diklik.
+     *
+     * Karena itu permukaan, tinta, dan pendarnya dipisah jadi token sendiri.
+     * Nilai di bawah ini = tampilan pabrik (persis seperti sebelumnya); bila
+     * admin benar-benar mengubah aksen, ThemePalette::css() menimpanya dengan
+     * hex hasil hitungan kontras. Lihat catatan di sana. */
+    --cta-from: var(--color-aqua-400);
+    --cta-via: var(--color-aqua-500);
+    --cta-to: var(--color-volt-400);
+    --cta-ink: #03050e;
+    --cta-glow: rgba(52, 226, 245, 0.9);
+    --cta-glow-hover: rgba(169, 123, 255, 0.95);
 }
 
 [data-theme='light'] {
@@ -513,6 +610,15 @@
     --deck-chip: rgba(10, 17, 36, 0.05);
     --deck-chip-border: rgba(10, 17, 36, 0.08);
     --deck-shadow: 0 18px 38px -22px rgba(16, 36, 72, 0.45);
+
+    /* Lihat catatan panjang di blok gelap. Di tema terang tintanya justru
+       terang, karena aksen bawaannya sengaja diturunkan luminansinya. */
+    --cta-from: var(--color-aqua-400);
+    --cta-via: var(--color-aqua-500);
+    --cta-to: var(--color-volt-400);
+    --cta-ink: #eef3fb;
+    --cta-glow: rgba(52, 226, 245, 0.9);
+    --cta-glow-hover: rgba(169, 123, 255, 0.95);
 }
 
 /* Latar halaman: dua nebula neon yang bergeser perlahan di atas warna dasar. */
@@ -966,5 +1072,200 @@
     .scan-sweep::after,
     .holo-edge:hover::before {
         animation: none;
+    }
+}
+
+/* ============================================================
+   Isi halaman kustom (menu admin "Halaman Kustom").
+
+   Yang dirender di sini bukan markup buatan kita: teks kaya dari editor admin
+   dan — pada mode "Kode HTML" — seluruh berkas HTML yang ditempel/diunggah.
+   Keduanya datang sebagai tag polos tanpa satu pun kelas Tailwind, sementara
+   preflight Tailwind justru menelanjangi tag polos (heading kehilangan ukuran,
+   daftar kehilangan bulatnya). Aturan di bawah mengembalikan tampilan dasarnya.
+
+   DUA HAL YANG DISENGAJA, dan keduanya penting:
+
+   1. Semuanya ditaruh di `@layer base`. CSS tanpa layer selalu menang atas CSS
+      berlayer, apa pun kekhususannya — jadi blok `<style>` milik admin
+      (yang memang tak berlayer) tetap bisa menimpa seluruh aturan ini.
+      Itulah inti fitur "HTML+CSS kustom": tampilan bawaan yang menolong
+      selama admin belum mengatur apa pun, dan langsung mengalah begitu ia
+      mengatur.
+   2. Nama tag dibungkus `:where()` supaya kekhususannya tetap serendah
+      mungkin (0,1,0) — cukup untuk mengalahkan preflight, tidak lebih.
+
+   Semua warnanya memakai variabel tema, jadi halaman kustom ikut berganti
+   saat pengunjung menekan sakelar gelap/terang.
+   ============================================================ */
+@layer base {
+    .page-prose {
+        color: color-mix(in oklab, var(--color-slate-300) 85%, transparent);
+        font-size: 1rem;
+        line-height: 1.9;
+    }
+
+    .page-prose :where(h1, h2, h3, h4, h5, h6) {
+        color: var(--color-slate-50);
+        font-family: var(--font-display);
+        font-weight: 800;
+        line-height: 1.25;
+        margin-block: 2.25rem 0.85rem;
+        scroll-margin-top: 7rem;
+    }
+
+    .page-prose :where(h1) {
+        font-size: 1.875rem;
+    }
+
+    .page-prose :where(h2) {
+        font-size: 1.5rem;
+    }
+
+    .page-prose :where(h3) {
+        font-size: 1.25rem;
+    }
+
+    .page-prose :where(h4, h5, h6) {
+        font-size: 1.0625rem;
+    }
+
+    .page-prose :where(p, ul, ol, dl, pre, table, blockquote, figure) {
+        margin-block: 1.15rem;
+    }
+
+    .page-prose :where(:first-child) {
+        margin-top: 0;
+    }
+
+    .page-prose :where(:last-child) {
+        margin-bottom: 0;
+    }
+
+    .page-prose :where(strong, b) {
+        color: var(--color-slate-100);
+        font-weight: 700;
+    }
+
+    .page-prose :where(a) {
+        color: var(--color-aqua-300);
+        text-decoration: underline;
+        text-decoration-color: color-mix(in oklab, var(--color-aqua-400) 45%, transparent);
+        text-underline-offset: 3px;
+        transition: color 0.2s ease;
+    }
+
+    .page-prose :where(a:hover) {
+        color: var(--color-aqua-200);
+    }
+
+    .page-prose :where(ul, ol) {
+        padding-inline-start: 1.5rem;
+    }
+
+    .page-prose :where(ul) {
+        list-style: disc;
+    }
+
+    .page-prose :where(ol) {
+        list-style: decimal;
+    }
+
+    .page-prose :where(li) {
+        margin-block: 0.4rem;
+    }
+
+    .page-prose :where(li)::marker {
+        color: var(--color-aqua-400);
+    }
+
+    .page-prose :where(blockquote) {
+        border-inline-start: 3px solid var(--color-aqua-400);
+        padding: 0.25rem 0 0.25rem 1.25rem;
+        color: var(--color-slate-200);
+        font-style: italic;
+    }
+
+    .page-prose :where(hr) {
+        border: 0;
+        border-top: 1px solid var(--color-void-700);
+        margin-block: 2.5rem;
+    }
+
+    .page-prose :where(img, video) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 1.25rem;
+    }
+
+    .page-prose :where(figcaption) {
+        color: var(--color-slate-400);
+        font-size: 0.8125rem;
+        line-height: 1.7;
+        margin-top: 0.6rem;
+    }
+
+    .page-prose :where(code, kbd, samp) {
+        background: var(--panel-lite-bg-solid);
+        border-radius: 0.4rem;
+        font-size: 0.875em;
+        padding: 0.15em 0.4em;
+    }
+
+    .page-prose :where(pre) {
+        background: var(--panel-lite-bg-solid);
+        border: 1px solid var(--panel-lite-border);
+        border-radius: 1rem;
+        overflow-x: auto;
+        padding: 1.1rem 1.25rem;
+    }
+
+    .page-prose :where(pre code) {
+        background: none;
+        padding: 0;
+    }
+
+    /* Tabel: jadwal & daftar data adalah alasan paling umum admin membuat
+       halaman sendiri, jadi ia perlu tampil rapi tanpa disentuh sama sekali. */
+    .page-prose :where(table) {
+        border-collapse: collapse;
+        display: block;
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .page-prose :where(th, td) {
+        border: 1px solid var(--color-void-700);
+        padding: 0.6rem 0.85rem;
+        text-align: start;
+        vertical-align: top;
+    }
+
+    .page-prose :where(th) {
+        background: var(--panel-lite-bg-solid);
+        color: var(--color-slate-100);
+        font-weight: 700;
+    }
+
+    .page-prose :where(caption) {
+        color: var(--color-slate-400);
+        font-size: 0.8125rem;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Sematan di dalam HTML kustom: tanpa ini `<iframe>` tanpa atribut ukuran
+       hanya setinggi 150 px bawaan peramban. */
+    .page-prose :where(iframe) {
+        aspect-ratio: 16 / 9;
+        border: 0;
+        border-radius: 1.25rem;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Mode "Kode HTML" — pembungkusnya tidak dibatasi lebar teks supaya tata
+       letak buatan admin (grid, kolom, section selebar layar) tidak terpotong. */
+    .page-html {
+        width: 100%;
     }
 }

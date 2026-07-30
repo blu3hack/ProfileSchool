@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\ContactInfo;
-use App\Models\CustomLink;
 use App\Models\NavLink;
 use App\Models\SocialLink;
 use Illuminate\Support\Facades\Schema;
@@ -32,24 +31,6 @@ class SiteInfo
             ->all());
 
         return $links ?: self::defaultNavLinks();
-    }
-
-    /**
-     * Menu tambahan bikinan admin (tabel `custom_links`).
-     *
-     * Sengaja dipisah dari `navLinks()`: jumlahnya bisa terus bertambah, jadi
-     * isinya tidak boleh ikut memenuhi baris navbar. Semuanya ditampung satu
-     * dropdown "Lainnya" + section kartu di atas footer.
-     *
-     * Di sini tidak ada nilai cadangan — situs memang sah tampil tanpa menu
-     * tambahan sama sekali, dan keduanya (dropdown & section) ikut hilang.
-     */
-    public static function extraLinks(): array
-    {
-        return self::fromTable('custom_links', fn () => CustomLink::active()->ordered()
-            ->get()
-            ->map(fn (CustomLink $link) => $link->toCard())
-            ->all());
     }
 
     public static function contacts(): array

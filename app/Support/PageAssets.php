@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Vite;
  * dijalankan. Rantainya jadi tiga perjalanan bolak-balik sebelum piksel pertama
  * muncul:
  *
- *     HTML  →  app.js  →  Opsi3.js + Opsi3.css  →  render
+ *     HTML  →  app.js  →  Welcome.js + Welcome.css  →  render
  *
  * Dengan menyebut berkas halaman di dalam <head>, unduhannya berjalan
  * bersamaan dengan bundel utama, bukan mengantre di belakangnya. Satu
@@ -26,7 +26,7 @@ class PageAssets
 
     /**
      * Berkas yang perlu didahulukan untuk sebuah komponen halaman Inertia,
-     * mis. 'Opsi3' atau 'Berita/Show'.
+     * mis. 'Welcome' atau 'Berita/Show'.
      *
      * @return array{js: list<string>, css: list<string>}
      */

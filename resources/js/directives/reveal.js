@@ -10,6 +10,14 @@ const presets = {
 };
 
 /**
+ * Opsi `v-reveal` yang animasinya TERULANG tiap elemen masuk viewport lagi —
+ * bukan hanya pada kunjungan pertama. Dipakai seluruh section landing page:
+ *
+ *     <p v-reveal="replay({ from: 'fade', delay: 0.2 })">
+ */
+export const replay = (options = {}) => ({ once: false, ...options });
+
+/**
  * v-reveal — animasikan elemen saat masuk viewport.
  *
  * <div v-reveal />                                  animasi default (naik + fade)

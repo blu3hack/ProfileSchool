@@ -7,12 +7,6 @@ import ThemeToggle from './ThemeToggle.vue';
 const props = defineProps({
     schoolName: { type: String, default: 'Alazka Islamic School' },
     links: { type: Array, default: () => [] },
-    /**
-     * Menu tambahan bikinan admin (tabel `custom_links`). Jumlahnya bebas
-     * bertambah, jadi tidak ikut memenuhi baris navbar: semuanya ditampung
-     * satu dropdown. Kosong → tombol dropdown tidak dirender sama sekali.
-     */
-    extraLinks: { type: Array, default: () => [] },
     /** Teks & gambar situs; dipakai untuk logo dan sub-judul yang bisa diedit admin. */
     content: { type: Object, default: () => ({}) },
     /**
@@ -33,26 +27,8 @@ const ctaIsSection = computed(() => ctaHref.value.startsWith('#'));
 /** Inisial nama sekolah untuk placeholder saat logo belum diunggah. */
 const initial = computed(() => (props.schoolName || 'A').trim().charAt(0).toUpperCase());
 
-/** Nama tombol dropdown penampung menu tambahan; bisa diganti admin. */
-const extrasLabel = computed(() => (props.content?.extras_menu_label || 'Lainnya').trim());
-const hasExtras = computed(() => props.extraLinks.length > 0);
-
-/**
- * Item dropdown tidak pernah membuka tautannya sendiri — semuanya menggulir
- * ke kartu miliknya di section "Menu Tambahan" (lihat NeonExtraLinks), tempat
- * pengunjung membaca keterangannya dulu sebelum memutuskan membuka.
- *
- * Karena itu targetnya id kartu, bukan `item.href`. Baris tanpa id (mis. data
- * cadangan saat komponen dipakai lepas) cukup diantar ke section-nya.
- */
-const anchorOf = (item) => (item.id ? `#menu-tambahan-${item.id}` : '#menu-tambahan');
-
 const scrolled = ref(false);
 const menuOpen = ref(false);
-/** Dropdown "Lainnya" di menu desktop. */
-const moreOpen = ref(false);
-/** Kelompok yang sama di menu mobile — dilipat sendiri agar daftarnya tak memanjang. */
-const mobileMoreOpen = ref(false);
 const activeHash = ref(props.active || props.links[0]?.hash || '');
 /** 0 … 1 — mengisi garis progres tipis di dasar navbar. */
 const progress = ref(0);
@@ -105,7 +81,12 @@ const startSpy = () => {
         return;
     }
 
+    // Hanya target `#section` yang boleh masuk `querySelector`. Menu bisa
+    // menunjuk ke alamat halaman (mis. `/datasiswa` milik Halaman Kustom), dan
+    // itu bukan selektor CSS yang sah — melewatkannya ke sini membuat peramban
+    // melempar SyntaxError dan seluruh scroll-spy navbar gagal dipasang.
     observedSections = props.links
+        .filter((link) => typeof link.hash === 'string' && link.hash.startsWith('#'))
         .map((link) => ({ hash: link.hash, el: document.querySelector(link.hash) }))
         .filter((section) => section.el);
 
@@ -152,64 +133,6 @@ const onScroll = () => {
 };
 
 const closeMenu = () => (menuOpen.value = false);
-const closeMore = () => (moreOpen.value = false);
-
-/**
- * Panel dropdown dirender di luar <nav>, bukan di dalam <li> tombolnya.
- *
- * Sebabnya `overflow-hidden` pada <nav> — dipakai untuk mengurung scanline &
- * garis progres ke dalam sudut membulat panel. Panel yang menggantung di
- * bawahnya ikut terpotong bila ditaruh di dalam. Jadi panel dipasang pada
- * pembungkus navbar, lalu digeser mendatar agar tetap sejajar tombolnya.
- */
-const shell = ref(null);
-const moreWrap = ref(null);
-const morePanel = ref(null);
-const moreButton = ref(null);
-/** Titik tengah panel (px, relatif pembungkus navbar). */
-const moreLeft = ref(0);
-
-/** Setengah lebar panel (w-72 = 18rem) — dipakai menjaganya tetap di dalam navbar. */
-const PANEL_HALF = 144;
-
-const placeDropdown = () => {
-    if (!moreButton.value || !shell.value) {
-        return;
-    }
-
-    const button = moreButton.value.getBoundingClientRect();
-    const wrap = shell.value.getBoundingClientRect();
-    const center = button.left - wrap.left + button.width / 2;
-
-    // Dijaga agar tepi panel tidak menggantung keluar dari lebar navbar.
-    moreLeft.value = Math.min(Math.max(center, PANEL_HALF), wrap.width - PANEL_HALF);
-};
-
-const toggleMore = () => {
-    if (moreOpen.value) {
-        closeMore();
-
-        return;
-    }
-
-    // Posisinya diukur saat dibuka: lebar navbar berubah mengikuti layar,
-    // dan tombolnya bergeser saat teks menu diedit admin.
-    placeDropdown();
-    moreOpen.value = true;
-};
-
-/** Klik di luar tombol & panel menutup dropdown. */
-const onPointerDown = (event) => {
-    if (!moreOpen.value) {
-        return;
-    }
-
-    if (moreWrap.value?.contains(event.target) || morePanel.value?.contains(event.target)) {
-        return;
-    }
-
-    closeMore();
-};
 
 /** Tutup menu saat layar melebar ke ukuran desktop (menu inline sudah tampil). */
 const onResize = () => {
@@ -219,25 +142,15 @@ const onResize = () => {
     if (window.innerWidth >= 1024) {
         closeMenu();
     }
-
-    if (moreOpen.value) {
-        placeDropdown();
-    }
 };
 
-/** Tombol Escape menutup menu mobile & dropdown. */
+/** Tombol Escape menutup menu mobile. */
 const onKeydown = (event) => {
     if (event.key !== 'Escape') {
         return;
     }
 
     closeMenu();
-
-    if (moreOpen.value) {
-        closeMore();
-        // Fokus dikembalikan ke tombolnya supaya urutan tab tidak melompat.
-        moreButton.value?.focus();
-    }
 };
 
 /**
@@ -258,7 +171,6 @@ onMounted(() => {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     window.addEventListener('keydown', onKeydown);
-    window.addEventListener('pointerdown', onPointerDown);
 });
 
 onBeforeUnmount(() => {
@@ -269,7 +181,6 @@ onBeforeUnmount(() => {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
     window.removeEventListener('keydown', onKeydown);
-    window.removeEventListener('pointerdown', onPointerDown);
 });
 
 /**
@@ -278,7 +189,6 @@ onBeforeUnmount(() => {
  */
 const goTo = (hash) => {
     menuOpen.value = false;
-    moreOpen.value = false;
     goToSection(hash);
 };
 
@@ -302,7 +212,7 @@ const goToCta = (event) => {
                 aria-hidden="true" @click="closeMenu"></div>
         </Transition>
 
-        <div ref="shell" class="pointer-events-auto relative mx-auto max-w-6xl transition-all duration-500"
+        <div class="pointer-events-auto relative mx-auto max-w-6xl transition-all duration-500"
             :class="scrolled ? 'translate-y-0' : 'translate-y-1'">
             <nav class="holo-panel relative flex h-16 items-center justify-between gap-4 overflow-hidden rounded-[1.75rem] px-4 transition-all duration-500 sm:px-5"
                 :class="scrolled ? 'neon-aqua' : 'shadow-none'" aria-label="Navigasi utama">
@@ -352,26 +262,6 @@ const goToCta = (event) => {
                             {{ link.label }}
                         </a>
                     </li>
-
-                    <!-- Penampung menu tambahan. Tombolnya di sini, panelnya
-                         di luar <nav> (lihat catatan pada placeDropdown). -->
-                    <li v-if="hasExtras" ref="moreWrap">
-                        <button ref="moreButton" type="button"
-                            class="relative flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition duration-300 xl:px-4"
-                            :class="moreOpen ? 'text-aqua-200' : 'text-slate-300/70 hover:text-aqua-300'"
-                            :aria-expanded="moreOpen" aria-controls="menu-lainnya" aria-haspopup="true"
-                            @click="toggleMore">
-                            <span v-if="moreOpen"
-                                class="absolute inset-0 -z-10 rounded-full border border-aqua-400/40 bg-aqua-400/10 shadow-[0_0_18px_rgba(52,226,245,0.35)_inset]"></span>
-                            {{ extrasLabel }}
-                            <svg class="h-3 w-3 transition-transform duration-300"
-                                :class="moreOpen ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                                aria-hidden="true">
-                                <path d="M5 9l7 7 7-7" />
-                            </svg>
-                        </button>
-                    </li>
                 </ul>
 
                 <div class="relative flex shrink-0 items-center gap-2">
@@ -407,38 +297,6 @@ const goToCta = (event) => {
                     :style="{ transform: `scaleX(${progress})`, transformOrigin: 'left center' }"></span>
             </nav>
 
-            <!-- Panel dropdown menu tambahan (desktop). Sengaja saudara dari
-                 <nav>, bukan anaknya: <nav> memakai overflow-hidden. -->
-            <Transition enter-active-class="transition duration-200 ease-out"
-                enter-from-class="-translate-y-2 opacity-0" leave-active-class="transition duration-150 ease-in"
-                leave-to-class="-translate-y-2 opacity-0">
-                <div v-show="moreOpen" id="menu-lainnya" ref="morePanel"
-                    class="holo-panel absolute top-full z-10 mt-3 hidden w-72 -translate-x-1/2 rounded-3xl p-2 lg:block"
-                    :style="{ left: `${moreLeft}px` }">
-                    <ul class="max-h-[70vh] overflow-y-auto overscroll-contain">
-                        <li v-for="item in props.extraLinks" :key="item.id ?? item.href">
-                            <a :href="anchorOf(item)"
-                                class="group/item flex items-start gap-3 rounded-2xl px-3 py-2.5 transition duration-300 hover:bg-aqua-400/10"
-                                @click.prevent="goTo(anchorOf(item))">
-                                <span
-                                    class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-aqua-400/25 bg-void-800/60 text-base transition duration-300 group-hover/item:border-aqua-400/60">
-                                    {{ item.icon }}
-                                </span>
-                                <span class="min-w-0 flex-1">
-                                    <span
-                                        class="block truncate text-sm font-semibold text-slate-100 transition duration-300 group-hover/item:text-aqua-200">
-                                        {{ item.label }}
-                                    </span>
-                                    <span v-if="item.description" class="mt-0.5 block truncate text-xs text-slate-400">
-                                        {{ item.description }}
-                                    </span>
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </Transition>
-
             <!-- Menu mobile -->
             <Transition enter-active-class="transition duration-300 ease-out"
                 enter-from-class="-translate-y-3 opacity-0 scale-95"
@@ -453,35 +311,6 @@ const goToCta = (event) => {
                                 @click.prevent="goTo(link.hash)">
                                 {{ link.label }}
                             </a>
-                        </li>
-
-                        <!-- Kelompok menu tambahan — dilipat supaya daftar
-                             mobile tidak memanjang saat menunya bertambah. -->
-                        <li v-if="hasExtras">
-                            <button type="button"
-                                class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-aqua-400/10 hover:text-aqua-200"
-                                :aria-expanded="mobileMoreOpen" aria-controls="menu-lainnya-mobile"
-                                @click="mobileMoreOpen = !mobileMoreOpen">
-                                {{ extrasLabel }}
-                                <svg class="h-3 w-3 transition-transform duration-300"
-                                    :class="mobileMoreOpen ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M5 9l7 7 7-7" />
-                                </svg>
-                            </button>
-
-                            <ul v-show="mobileMoreOpen" id="menu-lainnya-mobile"
-                                class="ml-3 mt-1 space-y-1 border-l border-void-700/70 pl-2">
-                                <li v-for="item in props.extraLinks" :key="item.id ?? item.href">
-                                    <a :href="anchorOf(item)"
-                                        class="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-aqua-400/10 hover:text-aqua-200"
-                                        @click.prevent="goTo(anchorOf(item))">
-                                        <span aria-hidden="true">{{ item.icon }}</span>
-                                        <span class="min-w-0 truncate">{{ item.label }}</span>
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
 
                         <li v-if="ctaLabel">

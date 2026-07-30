@@ -10,7 +10,16 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'SMPI Alazka Surabaya') }}</title>
+        {{-- Judul + kartu pratinjau tautan, dicetak server. Sengaja paling atas
+             di <head>: perayap WhatsApp/Telegram/Facebook tidak menjalankan
+             JavaScript dan hanya membaca potongan awal dokumen. Halaman yang
+             tidak menitipkan `meta` (panel admin, login) cukup memakai judul
+             bawaan — tidak ada yang membagikan alamatnya. --}}
+        @isset($meta)
+            @include('partials.meta')
+        @else
+            <title inertia>{{ config('app.name', 'SMPI Alazka Surabaya') }}</title>
+        @endisset
 
         @if ($themeBoot)
             {{-- Skrip sinkron & sedini mungkin: menetapkan mode final SEBELUM

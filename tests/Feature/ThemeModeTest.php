@@ -90,7 +90,7 @@ class ThemeModeTest extends TestCase
         // yang menanyakan preferensi itu skrip pra-render, jadi 'system' harus
         // utuh sampai ke sana. Payload-nya dibangun ulang lewat Js::from agar
         // pengujian tidak bergantung pada cara Laravel meng-escape kutip.
-        $expected = \Illuminate\Support\Js::from(ThemeMode::boot('Opsi3'))->toHtml();
+        $expected = \Illuminate\Support\Js::from(ThemeMode::boot('Welcome'))->toHtml();
 
         $this->assertStringContainsString('system', $expected);
 

@@ -22,6 +22,7 @@ const mainMenu = [
     { label: 'Tema Website', icon: '🎨', href: '/admin/tema' },
     { label: 'Berita', icon: '📰', href: '/admin/berita' },
     { label: 'Next Event', icon: '📅', href: '/admin/event' },
+    { label: 'Halaman Kustom', icon: '📄', href: '/admin/halaman' },
     { label: 'Pustaka Media', icon: '🖼️', href: '/admin/media' },
 ];
 

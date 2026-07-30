@@ -13,8 +13,6 @@ import { useTheme } from '../../lib/theme';
 const props = defineProps({
     schoolName: { type: String, default: 'Alazka Islamic School' },
     navLinks: { type: Array, default: () => [] },
-    /** Menu tambahan bikinan admin — tampil di dropdown "Lainnya" pada navbar. */
-    extraLinks: { type: Array, default: () => [] },
     /** Teks halaman yang bisa diedit admin (dipakai footer). */
     content: { type: Object, default: () => ({}) },
     event: { type: Object, required: true },
@@ -83,7 +81,7 @@ const goToBlock = (id) => {
     <Head :title="props.event.title" />
 
     <div :data-theme="theme" class="void-bg min-h-screen overflow-x-clip font-sans text-slate-200">
-        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks" :extra-links="props.extraLinks"
+        <NeonNavbar :school-name="props.schoolName" :links="props.navLinks"
             :content="props.content" active="#event" />
 
         <main class="relative z-10">

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\SettingController;
@@ -13,7 +14,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\Opsi3Controller;
-use App\Http\Controllers\ShortlinkController;
+use App\Http\Controllers\SlugController;
 use Illuminate\Support\Facades\Route;
 
 // ============================ HALAMAN PUBLIK ============================
@@ -70,6 +71,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/berita/{news}', [AdminNewsController::class, 'destroy'])->name('news.destroy');
     Route::patch('/berita/{news}/terbit', [AdminNewsController::class, 'togglePublish'])->name('news.toggle');
 
+    // Halaman kustom beralamat sendiri di akar situs, mis. /datasiswa.
+    Route::get('/halaman', [AdminPageController::class, 'index'])->name('pages.index');
+    Route::get('/halaman/tambah', [AdminPageController::class, 'create'])->name('pages.create');
+    Route::post('/halaman', [AdminPageController::class, 'store'])->name('pages.store');
+    Route::get('/halaman/{page}/ubah', [AdminPageController::class, 'edit'])->name('pages.edit');
+    Route::put('/halaman/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+    Route::delete('/halaman/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+    Route::patch('/halaman/{page}/terbit', [AdminPageController::class, 'togglePublish'])->name('pages.toggle');
+
     // Agenda "Next Event".
     Route::get('/event', [AdminEventController::class, 'index'])->name('events.index');
     Route::get('/event/tambah', [AdminEventController::class, 'create'])->name('events.create');
@@ -102,14 +112,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 });
 
-// ============================= TAUTAN PENDEK ============================
+// ======================= ALAMAT SATU RUAS DI AKAR =======================
 // WAJIB terdaftar paling akhir: rute ini menangkap sisa alamat satu ruas
-// yang tidak cocok dengan rute mana pun, mis. /sanggar → Google Form.
+// yang tidak cocok dengan rute mana pun di atas.
 //
-// Daftar tautannya dikelola admin lewat menu "Tautan Pendek". Slug yang
-// bentrok dengan rute di atas ditolak saat disimpan (lihat aturan `not_in`
-// pada config/admin_resources.php) karena rute di atas selalu menang.
+// Dua fitur berbagi ruang alamat ini dan karena itu diputuskan satu
+// controller — halaman kustom buatan admin (/datasiswa) lebih dulu, lalu
+// tautan pendek (/sanggar → Google Form). Alasan keduanya tidak bisa jadi dua
+// rute berurutan ada di App\Http\Controllers\SlugController.
+//
+// Slug yang bentrok dengan rute di atas ditolak saat disimpan — lihat
+// CustomPage::reservedSlugs() dan aturan `not_in` pada config/admin_resources.php.
 
-Route::get('/{slug}', ShortlinkController::class)
+Route::get('/{slug}', SlugController::class)
     ->where('slug', '[A-Za-z0-9][A-Za-z0-9._-]*')
-    ->name('shortlink');
+    ->name('slug');

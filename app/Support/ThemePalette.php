@@ -164,6 +164,14 @@ class ThemePalette
                 }
             }
 
+            // Tombol ajakan utama hero — lihat catatan pada self::cta().
+            if ($values['aqua'] !== $defaults[$mode]['aqua']
+                || $values['volt'] !== $defaults[$mode]['volt']) {
+                foreach (self::cta($mode, $values['aqua'], $values['volt']) as $token => $color) {
+                    $lines[] = "  --cta-{$token}: {$color};";
+                }
+            }
+
             if ($lines === []) {
                 continue;
             }
@@ -239,6 +247,125 @@ class ThemePalette
             700 => $mix(78, '#ffffff'),
             600 => $mix(66, '#ffffff'),
         ];
+    }
+
+    /**
+     * Token tombol ajakan utama di hero ("Daftar Sekarang").
+     *
+     * Permukaannya gradasi aqua-400 → aqua-500 → volt-400, dan dulu tintanya
+     * dipatok `text-void-950`. Pasangan itu hanya kebetulan terbaca pada palet
+     * pabrik: di mode gelap aksennya neon terang jadi tinta gelap menang, di
+     * mode terang aksennya sengaja digelapkan jadi tinta terang menang. Admin
+     * bebas memilih warna apa pun, termasuk yang luminansinya searah dengan
+     * tinta — dan begitu itu terjadi labelnya jadi tak terbaca sama sekali
+     * (tombolnya sendiri tetap ada di DOM dan tetap bisa diklik).
+     *
+     * Jadi tintanya tidak lagi ditebak, tapi dihitung: dipilih hitam atau putih
+     * yang kontras TERBURUK-nya terhadap seluruh titik gradasi paling baik.
+     * Setelah itu titik gradasi yang masih di bawah ambang baca digeser
+     * menjauhi tinta secukupnya — hanya yang gagal, sehingga warna pilihan
+     * admin dibiarkan utuh selama ia memang sudah terbaca.
+     *
+     * @return array<string,string>
+     */
+    protected static function cta(string $mode, string $aqua, string $volt): array
+    {
+        $aquaRamp = self::ramp($mode, $aqua);
+        $voltRamp = self::ramp($mode, $volt);
+
+        $stops = [$aquaRamp[400], $aquaRamp[500], $voltRamp[400]];
+        $ink = self::ink($stops);
+
+        [$from, $via, $to] = array_map(
+            fn (string $stop) => self::legible($stop, $ink),
+            $stops,
+        );
+
+        return [
+            'from' => $from,
+            'via' => $via,
+            'to' => $to,
+            'ink' => $ink,
+            // Pendarnya ikut warna tombol yang benar-benar tampil, bukan cyan
+            // & ungu bawaan yang dulu ditulis mati di markup.
+            'glow' => self::rgba($from, '0.9'),
+            'glow-hover' => self::rgba($to, '0.95'),
+        ];
+    }
+
+    /**
+     * Pilih tinta hitam atau putih untuk sebuah permukaan bergradasi.
+     *
+     * Yang dinilai adalah kontras terburuk terhadap SEMUA titik gradasi —
+     * memakai rata-rata akan meloloskan tombol yang salah satu ujungnya
+     * menelan teks.
+     *
+     * @param  array<int,string>  $stops
+     */
+    protected static function ink(array $stops): string
+    {
+        $dark = '#03050e';
+        $light = '#f8fbff';
+
+        $worst = fn (string $ink) => min(array_map(
+            fn (string $stop) => self::contrast($stop, $ink),
+            $stops,
+        ));
+
+        return $worst($light) > $worst($dark) ? $light : $dark;
+    }
+
+    /**
+     * Geser satu titik gradasi menjauhi tinta (ke hitam atau putih murni)
+     * sampai kontrasnya mencapai ambang baca WCAG AA untuk teks normal.
+     * Warna yang sudah lolos dikembalikan apa adanya — tanpa perubahan.
+     */
+    protected static function legible(string $hex, string $ink, float $target = 4.5): string
+    {
+        $away = self::luminance($ink) > 0.5 ? '#000000' : '#ffffff';
+
+        // Langkah 4% cukup halus: pergeseran warnanya tak kentara, tapi
+        // loopnya tetap pendek dan selalu berhenti (ujungnya warna murni).
+        for ($pct = 100; $pct > 0; $pct -= 4) {
+            $candidate = self::mixHex($hex, $pct, $away);
+
+            if (self::contrast($candidate, $ink) >= $target) {
+                return $candidate;
+            }
+        }
+
+        return $away;
+    }
+
+    /** Rasio kontras WCAG antara dua warna (1–21). */
+    protected static function contrast(string $a, string $b): float
+    {
+        $la = self::luminance($a);
+        $lb = self::luminance($b);
+
+        return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
+    }
+
+    /** Luminansi relatif WCAG: 0 = hitam, 1 = putih. */
+    protected static function luminance(string $hex): float
+    {
+        $channel = function (int $value): float {
+            $v = $value / 255;
+
+            return $v <= 0.04045 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
+        };
+
+        [$r, $g, $b] = self::rgb($hex);
+
+        return 0.2126 * $channel($r) + 0.7152 * $channel($g) + 0.0722 * $channel($b);
+    }
+
+    /** Hex → `rgba(r, g, b, a)`, untuk nilai yang butuh transparansi. */
+    protected static function rgba(string $hex, string $alpha): string
+    {
+        [$r, $g, $b] = self::rgb($hex);
+
+        return "rgba({$r}, {$g}, {$b}, {$alpha})";
     }
 
     /**

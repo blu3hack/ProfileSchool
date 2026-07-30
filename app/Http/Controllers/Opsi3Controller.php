@@ -6,6 +6,7 @@ use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Support\EventRepository;
 use App\Support\PageContent;
+use App\Support\PageMeta;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,10 +16,13 @@ use Inertia\Response;
  * Konten identik dengan Opsi 2 (diwarisi dari induk); yang berbeda hanya
  * lapisan presentasi: tema gelap futuristik, neon, dan efek 3D.
  * Ditambah aset visual khusus hero (foto gedung sekolah).
+ *
+ * Komponen Vue-nya: resources/js/Pages/Welcome.vue — halaman tipis yang
+ * merangkai section-section di resources/js/Components/Welcome/.
  */
 class Opsi3Controller extends Opsi2Controller
 {
-    protected string $page = 'Opsi3';
+    protected string $page = 'Welcome';
 
     /** Cache per-request: heroSlides() dipakai payload sekaligus preload. */
     protected ?array $slides = null;
@@ -43,6 +47,13 @@ class Opsi3Controller extends Opsi2Controller
             ->withViewData([
                 'heroPreload' => $hero['src'] ?? null,
                 'heroPreloadSrcset' => $hero['srcset'] ?? null,
+                // Kartu pratinjau beranda: identitas situs + foto hero yang
+                // sedang tayang. Lihat App\Support\PageMeta.
+                'meta' => PageMeta::make([
+                    'image' => $hero['src'] ?? null,
+                    'imageAlt' => $hero['alt'] ?? null,
+                    'url' => route('home'),
+                ]),
             ]);
     }
 

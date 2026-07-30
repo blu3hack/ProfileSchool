@@ -26,7 +26,6 @@ return [
         'prestasi' => 'Section Prestasi',
         'galeri' => 'Section Galeri',
         'ppdb' => 'Section PPDB / Ajakan Daftar',
-        'menu_tambahan' => 'Section Menu Tambahan',
         'footer' => 'Footer & Kontak Cepat',
     ],
 
@@ -39,6 +38,7 @@ return [
         ['key' => 'nav_cta_label', 'group' => 'identitas', 'type' => 'text', 'label' => 'Teks Tombol "Daftar" (Navbar)', 'hint' => 'Tombol menonjol di ujung kanan navbar. Kosongkan untuk menyembunyikannya.', 'default' => 'Daftar PPDB'],
         ['key' => 'nav_cta_href', 'group' => 'identitas', 'type' => 'text', 'label' => 'Target Tombol "Daftar"', 'hint' => 'Isi #ppdb untuk menggulir ke bagian PPDB, atau tempel URL formulir pendaftaran (mis. https://...) yang akan dibuka di tab baru.', 'default' => '#ppdb'],
         ['key' => 'meta_description', 'group' => 'identitas', 'type' => 'textarea', 'label' => 'Deskripsi Meta (SEO)', 'default' => 'Sekolah Islam terpadu jenjang SD & SMP dengan tahfidz terstruktur, sains modern, dan pembinaan akhlak.'],
+        ['key' => 'og_image', 'group' => 'identitas', 'type' => 'image', 'label' => 'Gambar Bagikan (WhatsApp/Facebook)', 'hint' => 'Tampil saat alamat situs dibagikan ke WhatsApp, Telegram, atau media sosial — dipakai hanya bila halamannya sendiri tidak punya foto. Disarankan lanskap 1200×630 px, di bawah 300 KB.', 'default' => null],
 
         // ------------------------------- Hero
         ['key' => 'hero_badge', 'group' => 'hero', 'type' => 'text', 'label' => 'Badge Atas', 'default' => 'Terakreditasi A · PPDB 2026/2027 Dibuka'],
@@ -106,15 +106,6 @@ return [
         ['key' => 'ppdb_primary_label', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Teks Tombol Utama', 'default' => 'Daftar via WhatsApp'],
         ['key' => 'ppdb_primary_href', 'group' => 'ppdb', 'type' => 'url', 'label' => 'Tautan Tombol Utama', 'hint' => 'Dipakai juga oleh tombol kotak PPDB di halaman detail berita, selama tautannya di grup "Kotak PPDB (Halaman Berita)" dibiarkan kosong.', 'default' => 'https://wa.me/6285606000606'],
         ['key' => 'ppdb_secondary_label', 'group' => 'ppdb', 'type' => 'text', 'label' => 'Teks Tombol Kedua', 'default' => 'Konsultasi Dulu'],
-
-        // ------------------------------- Section Menu Tambahan
-        // Isinya sendiri (daftar menunya) dikelola di menu "Menu Tambahan";
-        // yang di bawah ini hanya teks pembungkus section-nya.
-        ['key' => 'extras_menu_label', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Teks Dropdown Navbar', 'hint' => 'Nama tombol dropdown penampung menu tambahan di navbar.', 'default' => 'Lainnya'],
-        ['key' => 'extras_eyebrow', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Label Kecil', 'default' => 'Akses Cepat'],
-        ['key' => 'extras_title', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Judul Section', 'default' => 'Menu &'],
-        ['key' => 'extras_title_highlight', 'group' => 'menu_tambahan', 'type' => 'text', 'label' => 'Judul (gradasi neon)', 'default' => 'Layanan Lainnya'],
-        ['key' => 'extras_description', 'group' => 'menu_tambahan', 'type' => 'textarea', 'label' => 'Deskripsi Section', 'default' => 'Tautan penting lain seputar layanan sekolah — formulir, dokumen, dan halaman yang sering dicari orang tua serta siswa.'],
 
         // ------------------------------- Footer
         ['key' => 'footer_description', 'group' => 'footer', 'type' => 'textarea', 'label' => 'Paragraf Footer', 'default' => "Mendidik generasi Qur'ani yang cerdas, berakhlak mulia, dan siap berkontribusi bagi umat serta bangsa — dengan pendekatan belajar yang hangat dan relevan bagi anak masa kini."],

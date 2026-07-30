@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GalleryImage;
 use App\Support\PageContent;
+use App\Support\PageMeta;
 use App\Support\SiteInfo;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,18 +21,26 @@ class GalleryController extends Controller
     /** Seluruh foto galeri yang aktif, terurut sesuai pengaturan admin. */
     public function index(): Response
     {
+        $images = GalleryImage::active()->ordered()->get()
+            ->map(fn (GalleryImage $image) => $image->toCard())
+            ->filter(fn (array $image) => filled($image['src']))
+            ->values()
+            ->all();
+
         return Inertia::render('Galeri/Index', [
             'schoolName' => SiteInfo::name(),
             'navLinks' => SiteInfo::navLinks(),
-            'extraLinks' => SiteInfo::extraLinks(),
             'content' => PageContent::all(),
             'contacts' => SiteInfo::contacts(),
             'socials' => SiteInfo::socials(),
-            'images' => GalleryImage::active()->ordered()->get()
-                ->map(fn (GalleryImage $image) => $image->toCard())
-                ->filter(fn (array $image) => filled($image['src']))
-                ->values()
-                ->all(),
+            'images' => $images,
+        ])->withViewData([
+            'meta' => PageMeta::make([
+                'title' => 'Galeri',
+                'description' => PageContent::get('gallery_description'),
+                'image' => $images[0]['src'] ?? null,
+                'url' => route('gallery.index'),
+            ]),
         ]);
     }
 }
