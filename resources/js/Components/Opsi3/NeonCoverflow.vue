@@ -1,10 +1,9 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { A11y, Autoplay, EffectCoverflow, Keyboard, Navigation, Pagination } from 'swiper/modules';
+import { A11y, Autoplay, Keyboard, Navigation, Pagination } from 'swiper/modules';
 
 import 'swiper/css';
-import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
@@ -16,23 +15,39 @@ const props = defineProps({
     items: { type: Array, default: () => [] },
 });
 
-const modules = [A11y, Autoplay, EffectCoverflow, Keyboard, Navigation, Pagination];
+const modules = [A11y, Autoplay, Keyboard, Navigation, Pagination];
 
 /** Peta aksen → kelas neon dipakai bersama kartu berita di halaman lain. */
 const accentOf = (name) => newsAccent(name);
 
-// Rotasi lebih tajam & kedalaman lebih besar dari Opsi 2 → kesan 3D kuat.
-const coverflow = {
-    rotate: 46,
-    stretch: -10,
-    depth: 260,
-    modifier: 1,
-    slideShadows: false,
-};
-
 /**
- * Efek coverflow menulis ulang transform 3D tiap slide di tiap frame, jadi
- * autoplay-nya dijaga agar hanya berjalan selama carousel benar-benar terlihat.
+ * KENAPA BUKAN EffectCoverflow LAGI.
+ *
+ * Dulu slider ini memakai `effect="coverflow"` (rotate 46°, depth 260px) dan
+ * kartunya praktis tidak bisa diklik. Penyebabnya rantai 3D yang dibangun efek
+ * itu: `.swiper` diberi `perspective: 1200px`, `.swiper-wrapper` dan tiap
+ * `.swiper-slide` diberi `transform-style: preserve-3d`, lalu tiap slide
+ * ditulisi `translate3d(...) rotateY(...)` di setiap frame.
+ *
+ * Kartunya TERGAMBAR di tempat yang benar, tapi hit-test-nya tidak ikut masuk
+ * ke dalam subtree 3D itu. Diperiksa dengan `document.elementFromPoint()` tepat
+ * di tengah tiap kartu, yang terambil selalu `.swiper-wrapper` — bukan <a>-nya
+ * — termasuk pada slide aktif yang transform-nya identitas. Jadi ini bukan soal
+ * slide yang saling menimpa atau area klik yang bergeser: seluruh isi slide
+ * memang tidak terjangkau pointer.
+ *
+ * Kemiringan khas coverflow-nya tetap ada, tapi digambar sendiri di blok
+ * <style> dengan FUNGSI `perspective()` di dalam `transform` masing-masing
+ * slide — bukan PROPERTI `perspective` di elemen leluhur. Bedanya menentukan:
+ * properti itu (berpasangan dengan `preserve-3d`) membuat satu ruang 3D yang
+ * dihuni bersama semua slide, dan ruang itulah yang tidak bisa ditembus
+ * hit-test. Fungsi `perspective()` berlaku hanya untuk transform elemen itu
+ * sendiri; slide-nya tetap rata terhadap induknya, jadi kliknya dihitung lewat
+ * jalur biasa.
+ *
+ * Kalau suatu saat ada yang ingin menghidupkan `effect="coverflow"` lagi: klik
+ * kartu WAJIB diuji ulang di browser sungguhan lebih dulu. Tidak ada tes yang
+ * menangkap kegagalan ini, dan tampilannya tetap terlihat normal saat rusak.
  */
 const { onSwiper } = useAutoplayInView();
 
@@ -45,15 +60,68 @@ const hasLoop = props.items.length > 3;
 
 /** Tujuan kartu: halaman detail berita. */
 const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/berita');
+
+/**
+ * Jarak geser (px) yang masih dianggap ketukan, bukan usapan.
+ *
+ * Swiper sudah punya penjaga serupa (`preventClicks`), tapi di sini justru
+ * penjaga itulah yang membuat kartu terasa mati. Alurnya: begitu pointer
+ * bergeser lebih dari `threshold` (bawaan 5px) sambil ditekan, Swiper menandai
+ * `allowClick = false`, lalu membatalkan event click lewat `preventDefault()`
+ * DI FASE CAPTURE pada elemen `.swiper`. Untuk <a> biasa itu tepat — navigasi
+ * bawaan browser ikut batal. Tapi <Link> Inertia memeriksa `defaultPrevented`
+ * sebelum bekerja, jadi klik yang sudah dibatalkan Swiper tidak dipulihkan
+ * siapa pun: browser diam, Inertia diam, kartu seolah bukan tautan.
+ *
+ * Lima piksel itu sangat mudah terlampaui — jari yang bergeser sedikit saat
+ * mengetuk, atau kursor yang masih bergerak saat mengklik (dan tilt kartu
+ * justru mengundang kursor bergerak). Itulah kenapa kartu hanya sesekali mau
+ * terbuka. Jadi `prevent-clicks` dimatikan dan penjaganya dipindah ke sini
+ * dengan ambang yang lebih longgar.
+ */
+const DRAG_SLOP = 10;
+
+/**
+ * Posisi pointer saat tombol ditekan pada sebuah slide. `null` berarti belum
+ * ada tekanan yang menunggu klik.
+ */
+let pressedAt = null;
+
+const onSlidePointerDown = (event) => {
+    pressedAt = { x: event.clientX, y: event.clientY };
+};
+
+/**
+ * Dipasang di fase capture pada slide, jadi sempat berjalan sebelum <Link>
+ * Inertia menangani klik yang sama.
+ */
+const onSlideClick = (event) => {
+    const from = pressedAt;
+
+    pressedAt = null;
+
+    // Enter di papan tombol juga memicu click, tapi tanpa koordinat pointer
+    // (`detail` 0) — jangan sampai dibaca sebagai usapan sejauh ratusan piksel.
+    if (event.detail === 0 || !from) {
+        return;
+    }
+
+    if (Math.hypot(event.clientX - from.x, event.clientY - from.y) > DRAG_SLOP) {
+        event.preventDefault();
+    }
+};
 </script>
 
 <template>
-    <Swiper :modules="modules" effect="coverflow" :slides-per-view="1.15" :space-between="24" :breakpoints="breakpoints"
-        :centered-slides="true" :coverflow-effect="coverflow" :loop="hasLoop" grab-cursor
+    <Swiper :modules="modules" :slides-per-view="1.15" :space-between="24" :breakpoints="breakpoints"
+        :centered-slides="true" :loop="hasLoop" grab-cursor
         :keyboard="{ enabled: true }"
         :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
-        :pagination="{ clickable: true }" navigation class="neon-swiper pb-20!" @swiper="onSwiper">
-        <SwiperSlide v-for="item in props.items" :key="item.title" class="h-auto!">
+        :pagination="{ clickable: true }" navigation
+        :prevent-clicks="false" :prevent-clicks-propagation="false"
+        class="neon-swiper pb-20!" @swiper="onSwiper">
+        <SwiperSlide v-for="item in props.items" :key="item.title" class="h-auto!"
+            @pointerdown="onSlidePointerDown" @click.capture="onSlideClick">
             <HoloTilt class="h-full" :max="10" :lift="26" :glare-color="accentOf(item.accent).glare">
                 <!-- Seluruh kartu jadi tautan: klik di mana pun membuka detail berita. -->
                 <Link :href="linkOf(item)"
@@ -109,19 +177,80 @@ const linkOf = (item) => item.href ?? (item.slug ? `/berita/${item.slug}` : '/be
 </template>
 
 <style scoped>
-/* Slide non-aktif diredupkan & diturunkan saturasinya agar fokus ke tengah.
-   Sengaja tidak menyentuh `transform`: properti itu ditulis ulang EffectCoverflow
-   di tiap frame, jadi menambahkan transisi transform di sini akan membuat
-   efeknya tersendat. */
-.neon-swiper :deep(.swiper-slide) {
-    opacity: 0.3;
-    filter: saturate(0.6);
-    transition: opacity 0.5s ease, filter 0.5s ease;
+/* Kartu adalah tautan, jadi kursornya harus tangan.
+ *
+ * `grab-cursor` menulis `cursor: grab` sebagai gaya inline di `.swiper-wrapper`,
+ * dan Blink TIDAK punya aturan UA `cursor` untuk <a> — kursor tangan di atas
+ * tautan muncul hanya ketika nilai terhitungnya masih `auto`. Karena `cursor`
+ * diwarisi, `grab` dari wrapper ikut turun sampai ke dalam kartu dan menutupi
+ * satu-satunya petunjuk bahwa kartu itu bisa diklik. Afordansi usap tetap ada
+ * di area sekitar kartu. */
+.neon-swiper :deep(.swiper-slide a) {
+    cursor: pointer;
 }
 
-.neon-swiper :deep(.swiper-slide-active),
-.neon-swiper :deep(.swiper-slide-next),
+/* Kemiringan coverflow, digambar sendiri.
+ *
+ * Semua slide memakai satu rumus transform yang sama; yang berubah antar-state
+ * cuma tiga custom property di bawahnya. `perspective()` ditulis sebagai FUNGSI
+ * di dalam `transform`, bukan sebagai properti di leluhur — itu yang menjaga
+ * kartunya tetap bisa diklik (alasan lengkapnya di <script>).
+ *
+ * Urutan fungsinya penting: `translateX` sengaja diletakkan SEBELUM `rotateY`
+ * supaya pergeserannya terjadi di ruang layar setelah kartu miring — kalau
+ * ditaruh sesudahnya, ia akan menggeser sepanjang sumbu yang ikut terputar dan
+ * kartunya malah maju-mundur, bukan bergeser ke samping.
+ *
+ * `transform` aman disentuh dari CSS: efek bawaan Swiper ('slide') hanya
+ * menulis transform pada `.swiper-wrapper`, tidak pernah pada slide. */
+.neon-swiper :deep(.swiper-slide) {
+    /* Miring ke arah mana (derajat), digeser sejauh apa ke tengah, dan sekecil
+       apa. Hanya ketiga angka ini yang perlu disetel untuk mengubah rasa efek. */
+    --tilt: 0deg;
+    --shift: 0%;
+    --shrink: 0.86;
+
+    opacity: 0.3;
+    transform: perspective(1200px) translateX(var(--shift)) rotateY(var(--tilt)) scale(var(--shrink));
+    filter: saturate(0.6);
+    transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+}
+
+/* Dua tetangga miring saling berhadapan ke arah kartu tengah — sudut sama
+ * besar, arah berlawanan, jadi simetris kiri-kanan.
+ *
+ * Keduanya tetap terang penuh, seperti dulu di coverflow. Itu bukan detail
+ * sepele: saat beritanya hanya tiga, ketiga kartu selalu terlihat sekaligus dan
+ * tidak ada yang bisa digeser, jadi meredupkan tetangga berarti dua dari tiga
+ * kartu tampak pudar selamanya.
+ *
+ * `--shift` menarik keduanya sedikit ke tengah karena kartu yang miring
+ * menyempit secara optik (lebar proyeksinya ~cos 34° ≈ 0,83); tanpa itu celah
+ * antar-kartu jadi menganga. */
+.neon-swiper :deep(.swiper-slide-prev),
+.neon-swiper :deep(.swiper-slide-next) {
+    --shrink: 0.94;
+
+    opacity: 1;
+    filter: saturate(1);
+}
+
 .neon-swiper :deep(.swiper-slide-prev) {
+    --tilt: 34deg;
+    --shift: 5%;
+}
+
+.neon-swiper :deep(.swiper-slide-next) {
+    --tilt: -34deg;
+    --shift: -5%;
+}
+
+/* Kartu tengah menghadap lurus ke pembaca. */
+.neon-swiper :deep(.swiper-slide-active) {
+    --tilt: 0deg;
+    --shift: 0%;
+    --shrink: 1;
+
     opacity: 1;
     filter: saturate(1);
 }

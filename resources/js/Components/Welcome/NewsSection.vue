@@ -8,7 +8,7 @@ import { usePageText } from "../../lib/page-text";
 import { refreshScrollTriggers } from "../../lib/smooth-scroll";
 
 /**
- * Section "Berita" (#berita) — enam berita terbaru dalam slider coverflow.
+ * Section "Berita" (#berita) — enam berita terbaru dalam slider kartu.
  */
 const props = defineProps({
     /** Seluruh teks halaman; diedit admin lewat /admin/konten. */
